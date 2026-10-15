@@ -1,0 +1,8 @@
+plugin.c
+popup.c
+popup-rows.c
+popup-sections.c
+bt-dbus.c
+bt-agent.c
+bt-obex.c
+bt-obex-agent.c

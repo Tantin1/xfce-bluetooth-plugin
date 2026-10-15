@@ -1,0 +1,826 @@
+# Deutsch translation of xfce-bluetooth-plugin.
+# Copyright (C) 2026 Tantin
+# This file is distributed under the same license as the xfce-bluetooth-plugin package.
+# Machine-assisted translation; review by a native speaker is welcome.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: xfce-bluetooth-plugin 0.1.0\n"
+"Report-Msgid-Bugs-To: https://github.com/Tantin1/xfce-bluetooth-plugin/"
+"issues\n"
+"POT-Creation-Date: 2026-10-14 18:33+0000\n"
+"PO-Revision-Date: 2026-10-15 09:30-0300\n"
+"Last-Translator: Tantin\n"
+"Language-Team: Deutsch\n"
+"Language: de\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: plugin.c:508
+#, c-format
+msgid ""
+"\"%s\" is a symlink. The file transfer service refuses to write through "
+"symlinks, so incoming files will fail here."
+msgstr ""
+"„%s“ ist eine symbolische Verknüpfung. Der Dateiübertragungsdienst schreibt "
+"nicht über symbolische Verknüpfungen, daher schlagen eingehende Dateien hier "
+"fehl."
+
+#: plugin.c:513
+msgid ""
+"Some versions of the file transfer service reject every incoming file due to "
+"a bug in their own safety check — even without any symlink involved. Phones "
+"show this as \"transfer forbidden\". If reception keeps failing, try this "
+"fix; it does not require a symlink to be present."
+msgstr ""
+"Einige Versionen des Dateiübertragungsdienstes lehnen wegen eines Fehlers in "
+"ihrer eigenen Sicherheitsprüfung jede eingehende Datei ab – auch ohne "
+"symbolische Verknüpfung. Telefone zeigen dies als „Übertragung verboten“ an. "
+"Wenn der Empfang weiterhin fehlschlägt, probieren Sie diese Korrektur aus; "
+"dafür muss keine symbolische Verknüpfung vorhanden sein."
+
+#: plugin.c:546
+msgid "Could not apply the fix"
+msgstr "Die Korrektur konnte nicht angewendet werden"
+
+#: plugin.c:550
+msgid "Unknown error"
+msgstr "Unbekannter Fehler"
+
+#: plugin.c:601
+msgid "Properties — Bluetooth"
+msgstr "Eigenschaften — Bluetooth"
+
+#: plugin.c:603 popup.c:680 bt-agent.c:391 bt-obex-agent.c:374
+msgid "Close"
+msgstr "Schließen"
+
+#: plugin.c:609
+msgid "Appearance"
+msgstr "Darstellung"
+
+#: plugin.c:618
+msgid "Square button"
+msgstr "Quadratische Schaltfläche"
+
+#: plugin.c:623
+msgid "Plugin size:"
+msgstr "Plugin-Größe:"
+
+#: plugin.c:637
+msgid "Use panel size"
+msgstr "Leistengröße verwenden"
+
+#: plugin.c:642
+msgid "Icon size:"
+msgstr "Symbolgröße:"
+
+#: plugin.c:656
+msgid "Popup width:"
+msgstr "Fensterbreite:"
+
+#: plugin.c:664
+msgid "Popup height:"
+msgstr "Fensterhöhe:"
+
+#: plugin.c:677
+msgid "Show separators"
+msgstr "Trennlinien anzeigen"
+
+#: plugin.c:683
+msgid "Show devices without a name"
+msgstr "Geräte ohne Namen anzeigen"
+
+#: plugin.c:689
+msgid "Hide the icon when Bluetooth is off"
+msgstr "Symbol ausblenden, wenn Bluetooth ausgeschaltet ist"
+
+#: plugin.c:696
+msgid "Show notifications"
+msgstr "Benachrichtigungen anzeigen"
+
+#: plugin.c:718 bt-dbus.c:806
+msgid "File transfer"
+msgstr "Dateiübertragung"
+
+#: plugin.c:749
+msgid "Receive files from other devices"
+msgstr "Dateien von anderen Geräten empfangen"
+
+#: plugin.c:757
+msgid "Save to:"
+msgstr "Speichern in:"
+
+#: plugin.c:762
+msgid "Destination folder"
+msgstr "Zielordner"
+
+#: plugin.c:805
+msgid "Fix automatically"
+msgstr "Automatisch beheben"
+
+#: plugin.c:892
+#, c-format
+msgid "%s connected"
+msgstr "%s verbunden"
+
+#: plugin.c:893 plugin.c:900 plugin.c:1052 popup-sections.c:578
+#: bt-obex-agent.c:274
+msgid "Bluetooth"
+msgstr "Bluetooth"
+
+#: plugin.c:898
+#, c-format
+msgid "%s disconnected"
+msgstr "%s getrennt"
+
+#: plugin.c:899
+msgid "Device disconnected"
+msgstr "Gerät getrennt"
+
+#: plugin.c:916 popup-sections.c:210
+msgid "No Bluetooth adapter"
+msgstr "Kein Bluetooth-Adapter"
+
+#: plugin.c:918 popup-sections.c:212
+msgid "Bluetooth is off"
+msgstr "Bluetooth ist ausgeschaltet"
+
+#: plugin.c:920
+msgid "Bluetooth on — no devices connected"
+msgstr "Bluetooth an — keine Geräte verbunden"
+
+#: plugin.c:922 popup-sections.c:216
+#, c-format
+msgid "Connected to %s"
+msgstr "Verbunden mit %s"
+
+#: plugin.c:924 popup-sections.c:218
+#, c-format
+msgid "%d devices connected"
+msgstr "%d Geräte verbunden"
+
+#: plugin.c:1028 plugin.c:1032
+msgid "There is already another instance of this plugin on the panel."
+msgstr ""
+"Es befindet sich bereits eine andere Instanz dieses Plugins in der Leiste."
+
+#: plugin.c:1034
+msgid ""
+"This instance will remain inactive. Remove it from the panel to avoid "
+"confusion."
+msgstr ""
+"Diese Instanz bleibt inaktiv. Entfernen Sie sie aus der Leiste, um "
+"Verwirrung zu vermeiden."
+
+#: plugin.c:1131
+msgid "Bluetooth manager plugin for the XFCE panel"
+msgstr "Bluetooth-Verwaltungs-Plugin für die XFCE-Leiste"
+
+#: popup.c:288
+msgid "The device did not answer. Make sure it is on and nearby."
+msgstr ""
+"Das Gerät hat nicht geantwortet. Stellen Sie sicher, dass es eingeschaltet "
+"und in der Nähe ist."
+
+#: popup.c:300
+msgid ""
+"This computer has no service for that profile. For audio profiles, the sound "
+"server provides it."
+msgstr ""
+"Dieser Rechner hat keinen Dienst für dieses Profil. Bei Audioprofilen stellt "
+"ihn der Soundserver bereit."
+
+#: popup.c:442 popup.c:775
+msgid "Connecting…"
+msgstr "Wird verbunden …"
+
+#: popup.c:444
+msgid "Disconnecting…"
+msgstr "Wird getrennt …"
+
+#: popup.c:445
+msgid "Pairing…"
+msgstr "Wird gekoppelt …"
+
+#: popup.c:446
+msgid "Reconnecting…"
+msgstr "Wird neu verbunden …"
+
+#: popup.c:447
+msgid "Removing…"
+msgstr "Wird entfernt …"
+
+#: popup.c:558 popup-sections.c:563
+msgid "Search"
+msgstr "Suchen"
+
+#: popup.c:573 popup-sections.c:562
+msgid "Searching…"
+msgstr "Suche läuft …"
+
+#: popup.c:695 bt-obex-agent.c:299
+#, c-format
+msgid "%s of %s"
+msgstr "%s von %s"
+
+#: popup.c:706
+msgid "Sending…"
+msgstr "Wird gesendet …"
+
+#: popup.c:711
+msgid "Waiting for the other device to accept…"
+msgstr "Warten, bis das andere Gerät annimmt …"
+
+#: popup.c:745
+msgid "Send file"
+msgstr "Datei senden"
+
+#: popup.c:762
+#, c-format
+msgid "To: %s"
+msgstr "An: %s"
+
+#: popup.c:784 popup.c:865 popup-rows.c:908 bt-agent.c:303 bt-agent.c:341
+#: bt-obex-agent.c:774
+msgid "Cancel"
+msgstr "Abbrechen"
+
+#: popup.c:845
+msgid "Could not reach the D-Bus session bus."
+msgstr "Der D-Bus-Sitzungsbus ist nicht erreichbar."
+
+#: popup.c:864
+msgid "Select a file to send"
+msgstr "Wählen Sie eine Datei zum Senden"
+
+#: popup.c:866
+msgid "Send"
+msgstr "Senden"
+
+#: popup.c:1015
+msgid "Advanced settings…"
+msgstr "Erweiterte Einstellungen …"
+
+#: popup.c:1034
+msgid "Visible to other devices"
+msgstr "Für andere Geräte sichtbar"
+
+#: popup.c:1054
+#, c-format
+msgid ""
+"Other devices can find this computer for %d minutes; then it turns off by "
+"itself."
+msgstr ""
+"Andere Geräte können diesen Rechner %d Minuten lang finden; danach schaltet "
+"sich die Sichtbarkeit von selbst ab."
+
+#: popup-rows.c:254 popup-rows.c:521 popup-rows.c:851
+msgid "Disconnect"
+msgstr "Trennen"
+
+#: popup-rows.c:257 popup-rows.c:520 popup-rows.c:852
+msgid "Connect"
+msgstr "Verbinden"
+
+#: popup-rows.c:260 popup-rows.c:853 bt-agent.c:343 bt-agent.c:448
+#: bt-agent.c:462
+msgid "Pair"
+msgstr "Koppeln"
+
+#: popup-rows.c:296 popup-rows.c:866
+msgid "Reconnect"
+msgstr "Neu verbinden"
+
+#: popup-rows.c:330 popup-rows.c:877 popup-rows.c:913
+msgid "Forget"
+msgstr "Vergessen"
+
+#: popup-rows.c:434
+msgid "Name:"
+msgstr "Name:"
+
+#: popup-rows.c:452
+#, c-format
+msgid "Leave it empty to go back to the device's own name (%s)."
+msgstr "Leer lassen, um zum eigenen Namen des Geräts zurückzukehren (%s)."
+
+#: popup-rows.c:455
+msgid "Leave it empty to go back to the device's own name."
+msgstr "Leer lassen, um zum eigenen Namen des Geräts zurückzukehren."
+
+#: popup-rows.c:466
+msgid "Rename"
+msgstr "Umbenennen"
+
+#: popup-rows.c:489
+msgid "High-quality audio (A2DP)"
+msgstr "Audio in hoher Qualität (A2DP)"
+
+#: popup-rows.c:490
+msgid "Audio from the device (A2DP)"
+msgstr "Audio vom Gerät (A2DP)"
+
+#: popup-rows.c:491
+msgid "Hands-free (HFP)"
+msgstr "Freisprechen (HFP)"
+
+#: popup-rows.c:492
+msgid "Headset (HSP)"
+msgstr "Headset (HSP)"
+
+#: popup-rows.c:493
+msgid "Keyboard / mouse (HID)"
+msgstr "Tastatur / Maus (HID)"
+
+#: popup-rows.c:547
+msgid "Connect a single profile"
+msgstr "Einzelnes Profil verbinden"
+
+#: popup-rows.c:578
+msgid ""
+"To choose between high-quality sound and hands-free with microphone, use the "
+"sound settings: that choice belongs to the sound server, not to Bluetooth."
+msgstr ""
+"Um zwischen Ton in hoher Qualität und Freisprechen mit Mikrofon zu wählen, "
+"verwenden Sie die Toneinstellungen: Diese Wahl trifft der Soundserver, nicht "
+"Bluetooth."
+
+#: popup-rows.c:636
+msgid "Device name:"
+msgstr "Gerätename:"
+
+#: popup-rows.c:639
+msgid "Address:"
+msgstr "Adresse:"
+
+#: popup-rows.c:642
+msgid "Profiles:"
+msgstr "Profile:"
+
+#: popup-rows.c:647
+msgid "Battery:"
+msgstr "Akku:"
+
+#: popup-rows.c:651
+#, c-format
+msgid "%d%% (%d dBm)"
+msgstr "%d%% (%d dBm)"
+
+#: popup-rows.c:654
+msgid "Signal:"
+msgstr "Signal:"
+
+#: popup-rows.c:657
+msgid "Paired:"
+msgstr "Gekoppelt:"
+
+#: popup-rows.c:658
+msgid "Yes"
+msgstr "Ja"
+
+#: popup-rows.c:658
+msgid "No"
+msgstr "Nein"
+
+#: popup-rows.c:660
+msgid "Pairing:"
+msgstr "Kopplung:"
+
+#: popup-rows.c:660
+msgid "Legacy (PIN)"
+msgstr "Veraltet (PIN)"
+
+#: popup-rows.c:680
+msgid "Blocked"
+msgstr "Blockiert"
+
+#: popup-rows.c:684
+#, c-format
+msgid "Connected · Battery %d%%"
+msgstr "Verbunden · Akku %d%%"
+
+#: popup-rows.c:685
+msgid "Connected"
+msgstr "Verbunden"
+
+#: popup-rows.c:690
+msgid "Paired · Out of range"
+msgstr "Gekoppelt · Außer Reichweite"
+
+#: popup-rows.c:691
+#, c-format
+msgid "Paired · Signal %d%%"
+msgstr "Gekoppelt · Signal %d%%"
+
+#: popup-rows.c:696
+#, c-format
+msgid "Available · Signal %d%%"
+msgstr "Verfügbar · Signal %d%%"
+
+#: popup-rows.c:698
+msgid "Available"
+msgstr "Verfügbar"
+
+#: popup-rows.c:850
+msgid "Unblock"
+msgstr "Blockierung aufheben"
+
+#: popup-rows.c:868
+msgid ""
+"Disconnect and connect again. Often fixes a device that is connected but "
+"does not work."
+msgstr ""
+"Trennen und erneut verbinden. Hilft oft bei einem Gerät, das verbunden ist, "
+"aber nicht funktioniert."
+
+#: popup-rows.c:890
+msgid "Forget this device?"
+msgstr "Dieses Gerät vergessen?"
+
+#: popup-rows.c:897
+msgid "You will have to pair it again to use it."
+msgstr "Sie müssen es erneut koppeln, um es zu verwenden."
+
+#: popup-rows.c:930
+msgid "Send file…"
+msgstr "Datei senden …"
+
+#: popup-rows.c:941
+msgid "Connect automatically"
+msgstr "Automatisch verbinden"
+
+#: popup-rows.c:955
+msgid "Details"
+msgstr "Details"
+
+#: popup-rows.c:996
+msgid "Working…"
+msgstr "Wird ausgeführt …"
+
+#: popup-sections.c:78
+msgid "Searching for devices…"
+msgstr "Suche nach Geräten …"
+
+#: popup-sections.c:79
+msgid "No devices found. Press Search."
+msgstr "Keine Geräte gefunden. Klicken Sie auf „Suchen“."
+
+#: popup-sections.c:80
+msgid "This adapter is switched off."
+msgstr "Dieser Adapter ist ausgeschaltet."
+
+#: popup-sections.c:214
+msgid "No devices connected"
+msgstr "Keine Geräte verbunden"
+
+#: popup-sections.c:453
+msgid "No Bluetooth adapter was found on this computer."
+msgstr "Auf diesem Rechner wurde kein Bluetooth-Adapter gefunden."
+
+#: bt-dbus.c:801
+msgid "Audio"
+msgstr "Audio"
+
+#: bt-dbus.c:802
+msgid "Hands-free"
+msgstr "Freisprechen"
+
+#: bt-dbus.c:803
+msgid "Remote control"
+msgstr "Fernbedienung"
+
+#: bt-dbus.c:804
+msgid "Keyboard/Mouse"
+msgstr "Tastatur/Maus"
+
+#: bt-dbus.c:805
+msgid "Network"
+msgstr "Netzwerk"
+
+#: bt-dbus.c:807
+msgid "Contacts/Messages"
+msgstr "Kontakte/Nachrichten"
+
+#: bt-dbus.c:1160
+msgid "Pairing failed: the code did not match."
+msgstr "Kopplung fehlgeschlagen: Der Code stimmte nicht überein."
+
+#: bt-dbus.c:1162
+msgid "Pairing was cancelled."
+msgstr "Die Kopplung wurde abgebrochen."
+
+#: bt-dbus.c:1164
+msgid "The device rejected the pairing."
+msgstr "Das Gerät hat die Kopplung abgelehnt."
+
+#: bt-dbus.c:1166
+msgid "The device did not answer in time."
+msgstr "Das Gerät hat nicht rechtzeitig geantwortet."
+
+#: bt-dbus.c:1168
+msgid "Could not connect. Make sure the device is on and nearby."
+msgstr ""
+"Verbindung fehlgeschlagen. Stellen Sie sicher, dass das Gerät eingeschaltet "
+"und in der Nähe ist."
+
+#: bt-dbus.c:1170
+msgid "The device is already paired."
+msgstr "Das Gerät ist bereits gekoppelt."
+
+#: bt-dbus.c:1172
+msgid "The device is already connected."
+msgstr "Das Gerät ist bereits verbunden."
+
+#: bt-dbus.c:1174
+msgid "Another operation is already running on this device."
+msgstr "Auf diesem Gerät läuft bereits ein anderer Vorgang."
+
+#: bt-dbus.c:1176
+msgid "The adapter is not ready."
+msgstr "Der Adapter ist nicht bereit."
+
+#: bt-dbus.c:1179
+msgid "The device does not support this operation."
+msgstr "Das Gerät unterstützt diesen Vorgang nicht."
+
+#: bt-dbus.c:1181
+msgid "The operation failed. Try again."
+msgstr "Der Vorgang ist fehlgeschlagen. Versuchen Sie es erneut."
+
+#: bt-dbus.c:1186
+msgid "The operation failed."
+msgstr "Der Vorgang ist fehlgeschlagen."
+
+#: bt-agent.c:288 bt-agent.c:329 bt-agent.c:377
+msgid "Bluetooth pairing"
+msgstr "Bluetooth-Kopplung"
+
+#: bt-agent.c:379
+msgid "Type this code on the other device and confirm."
+msgstr "Geben Sie diesen Code auf dem anderen Gerät ein und bestätigen Sie."
+
+#: bt-agent.c:444 bt-agent.c:458
+#, c-format
+msgid "Pair with “%s”?"
+msgstr "Mit „%s“ koppeln?"
+
+#: bt-agent.c:447
+msgid "Check that the same code is shown on the other device."
+msgstr "Prüfen Sie, ob auf dem anderen Gerät derselbe Code angezeigt wird."
+
+#: bt-agent.c:460
+msgid ""
+"This device does not show a confirmation code. Only accept if you started "
+"the pairing yourself."
+msgstr ""
+"Dieses Gerät zeigt keinen Bestätigungscode an. Nehmen Sie nur an, wenn Sie "
+"die Kopplung selbst gestartet haben."
+
+#: bt-agent.c:474
+#, c-format
+msgid "Allow “%s” to connect?"
+msgstr "Darf sich „%s“ verbinden?"
+
+#: bt-agent.c:476
+#, c-format
+msgid "Requested service: %s"
+msgstr "Angeforderter Dienst: %s"
+
+#: bt-agent.c:477
+msgid "The device is asking to use a service on this computer."
+msgstr "Das Gerät möchte einen Dienst auf diesem Rechner nutzen."
+
+#: bt-agent.c:480
+msgid "Allow"
+msgstr "Erlauben"
+
+#: bt-agent.c:490
+#, c-format
+msgid "Enter the PIN for “%s”"
+msgstr "PIN für „%s“ eingeben"
+
+#: bt-agent.c:492
+msgid "Older devices usually use 0000 or 1234."
+msgstr "Ältere Geräte verwenden meist 0000 oder 1234."
+
+#: bt-agent.c:502
+#, c-format
+msgid "Enter the code for “%s”"
+msgstr "Code für „%s“ eingeben"
+
+#: bt-agent.c:504
+msgid "Type the code shown on the other device."
+msgstr "Geben Sie den Code ein, der auf dem anderen Gerät angezeigt wird."
+
+#: bt-agent.c:514 bt-agent.c:529
+#, c-format
+msgid "Pairing with “%s”"
+msgstr "Kopplung mit „%s“"
+
+#: bt-obex.c:261
+msgid "File transfer: ready"
+msgstr "Dateiübertragung: bereit"
+
+#: bt-obex.c:263
+msgid "File transfer: service installed but not enabled"
+msgstr "Dateiübertragung: Dienst installiert, aber nicht aktiviert"
+
+#: bt-obex.c:265
+msgid "File transfer: service not installed"
+msgstr "Dateiübertragung: Dienst nicht installiert"
+
+#: bt-obex.c:268
+msgid "File transfer: session bus unavailable"
+msgstr "Dateiübertragung: Sitzungsbus nicht verfügbar"
+
+#: bt-obex.c:281
+msgid ""
+"Enable it with:\n"
+"systemctl --user enable --now obex.service"
+msgstr ""
+"Aktivieren Sie ihn mit:\n"
+"systemctl --user enable --now obex.service"
+
+#: bt-obex.c:285
+#, c-format
+msgid ""
+"Install the package \"%s\", then run:\n"
+"systemctl --user enable --now obex.service"
+msgstr ""
+"Installieren Sie das Paket „%s“ und führen Sie dann aus:\n"
+"systemctl --user enable --now obex.service"
+
+#: bt-obex.c:292
+msgid "The plugin could not reach the D-Bus session bus."
+msgstr "Das Plugin konnte den D-Bus-Sitzungsbus nicht erreichen."
+
+#: bt-obex.c:423
+#, c-format
+msgid "Could not create %s: %s"
+msgstr "%s konnte nicht erstellt werden: %s"
+
+#: bt-obex.c:548 bt-obex.c:579
+msgid "Unknown error."
+msgstr "Unbekannter Fehler."
+
+#: bt-obex.c:551 bt-obex.c:629
+msgid "Cancelled."
+msgstr "Abgebrochen."
+
+#: bt-obex.c:559
+#, c-format
+msgid ""
+"The Bluetooth file transfer service is not available. Install the package "
+"\"%s\"."
+msgstr ""
+"Der Bluetooth-Dateiübertragungsdienst ist nicht verfügbar. Installieren Sie "
+"das Paket „%s“."
+
+#: bt-obex.c:575
+msgid "This device does not accept files."
+msgstr "Dieses Gerät nimmt keine Dateien an."
+
+#: bt-obex.c:662 bt-obex.c:739
+msgid "File sent."
+msgstr "Datei gesendet."
+
+#: bt-obex.c:666
+msgid "The device rejected the file or the transfer was interrupted."
+msgstr ""
+"Das Gerät hat die Datei abgelehnt oder die Übertragung wurde unterbrochen."
+
+#: bt-obex.c:740
+msgid "The transfer ended unexpectedly."
+msgstr "Die Übertragung wurde unerwartet beendet."
+
+#: bt-obex-agent.c:175
+msgid "Unknown device"
+msgstr "Unbekanntes Gerät"
+
+#: bt-obex-agent.c:263 bt-obex-agent.c:731
+msgid "file"
+msgstr "Datei"
+
+#: bt-obex-agent.c:267
+#, c-format
+msgid "%s received from %s"
+msgstr "%s empfangen – Absender: %s"
+
+#: bt-obex-agent.c:269 bt-obex-agent.c:741
+msgid "a device"
+msgstr "ein Gerät"
+
+#: bt-obex-agent.c:271
+#, c-format
+msgid "Could not receive %s"
+msgstr "%s konnte nicht empfangen werden"
+
+#: bt-obex-agent.c:320
+msgid "Receiving…"
+msgstr "Wird empfangen …"
+
+#: bt-obex-agent.c:381
+msgid ""
+"The transfer was interrupted or the file transfer service could not write to "
+"the destination folder."
+msgstr ""
+"Die Übertragung wurde unterbrochen oder der Dateiübertragungsdienst konnte "
+"nicht in den Zielordner schreiben."
+
+#: bt-obex-agent.c:390
+#, c-format
+msgid ""
+"File received. Saved in:\n"
+"%s"
+msgstr ""
+"Datei empfangen. Gespeichert in:\n"
+"%s"
+
+#: bt-obex-agent.c:415
+#, c-format
+msgid ""
+"Nothing arrived from the other device for %d seconds, so the transfer was "
+"given up."
+msgstr ""
+"Vom anderen Gerät kam %d Sekunden lang nichts an, daher wurde die "
+"Übertragung aufgegeben."
+
+#: bt-obex-agent.c:719
+msgid "Receiving file"
+msgstr "Datei wird empfangen"
+
+#: bt-obex-agent.c:739
+#, c-format
+msgid "From: %s"
+msgstr "Absender: %s"
+
+#: bt-obex-agent.c:754
+msgid "Waiting for data…"
+msgstr "Warten auf Daten …"
+
+#: bt-obex-agent.c:766
+msgid "Show in folder"
+msgstr "Im Ordner anzeigen"
+
+#: bt-obex-agent.c:956
+#, c-format
+msgid "%s wants to send you a file"
+msgstr "%s möchte Ihnen eine Datei senden"
+
+#: bt-obex-agent.c:966
+#, c-format
+msgid ""
+"%s  (%s)\n"
+"\n"
+"It will be saved in:\n"
+"%s"
+msgstr ""
+"%s  (%s)\n"
+"\n"
+"Wird gespeichert in:\n"
+"%s"
+
+#: bt-obex-agent.c:970
+#, c-format
+msgid ""
+"%s\n"
+"\n"
+"It will be saved in:\n"
+"%s"
+msgstr ""
+"%s\n"
+"\n"
+"Wird gespeichert in:\n"
+"%s"
+
+#: bt-obex-agent.c:977
+msgid "Reject"
+msgstr "Ablehnen"
+
+#: bt-obex-agent.c:978
+msgid "Accept"
+msgstr "Annehmen"
+
+#: bt-obex-agent.c:1432
+msgid "Receiving files is off."
+msgstr "Der Dateiempfang ist ausgeschaltet."
+
+#: bt-obex-agent.c:1436
+msgid "Ready to receive files."
+msgstr "Bereit zum Empfangen von Dateien."
+
+#: bt-obex-agent.c:1438
+msgid ""
+"Another program is already handling incoming files (Blueman, for example). "
+"Close it and this will take over on its own within a minute."
+msgstr ""
+"Ein anderes Programm verarbeitet bereits eingehende Dateien (zum Beispiel "
+"Blueman). Schließen Sie es, dann übernimmt dieses Plugin innerhalb einer "
+"Minute von selbst."
+
+#: bt-obex-agent.c:1443
+msgid "Waiting for the file transfer service…"
+msgstr "Warten auf den Dateiübertragungsdienst …"

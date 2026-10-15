@@ -1,0 +1,28 @@
+# Carpeta de compilación
+build/
+
+# Binarios y objetos
+*.o
+*.so
+*.mo
+
+# Archivos generados por CMake si compilaste dentro del árbol
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+install_manifest.txt
+Makefile
+compile_commands.json
+
+# Archivo .desktop generado (se crea a partir del .desktop.in)
+xfce-bluetooth-plugin.desktop
+
+# Parches de trabajo
+*.patch
+
+# Editores y sistema
+.vscode/
+.idea/
+*~
+*.swp
+.DS_Store

@@ -1,0 +1,799 @@
+# 简体中文 translation of xfce-bluetooth-plugin.
+# Copyright (C) 2026 Tantin
+# This file is distributed under the same license as the xfce-bluetooth-plugin package.
+# Machine-assisted translation; review by a native speaker is welcome.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: xfce-bluetooth-plugin 0.1.0\n"
+"Report-Msgid-Bugs-To: https://github.com/Tantin1/xfce-bluetooth-plugin/"
+"issues\n"
+"POT-Creation-Date: 2026-10-14 18:33+0000\n"
+"PO-Revision-Date: 2026-10-15 09:30-0300\n"
+"Last-Translator: Tantin\n"
+"Language-Team: 简体中文\n"
+"Language: zh_CN\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: plugin.c:508
+#, c-format
+msgid ""
+"\"%s\" is a symlink. The file transfer service refuses to write through "
+"symlinks, so incoming files will fail here."
+msgstr ""
+"“%s”是符号链接。文件传输服务拒绝通过符号链接写入，因此传入的文件在这里会失"
+"败。"
+
+#: plugin.c:513
+msgid ""
+"Some versions of the file transfer service reject every incoming file due to "
+"a bug in their own safety check — even without any symlink involved. Phones "
+"show this as \"transfer forbidden\". If reception keeps failing, try this "
+"fix; it does not require a symlink to be present."
+msgstr ""
+"某些版本的文件传输服务由于自身安全检查存在缺陷，即使没有任何符号链接，也会拒"
+"绝所有传入文件。手机上会显示为“传输被禁止”。如果接收一直失败，请尝试此修复；"
+"它不要求存在符号链接。"
+
+#: plugin.c:546
+msgid "Could not apply the fix"
+msgstr "无法应用修复"
+
+#: plugin.c:550
+msgid "Unknown error"
+msgstr "未知错误"
+
+#: plugin.c:601
+msgid "Properties — Bluetooth"
+msgstr "属性 — 蓝牙"
+
+#: plugin.c:603 popup.c:680 bt-agent.c:391 bt-obex-agent.c:374
+msgid "Close"
+msgstr "关闭"
+
+#: plugin.c:609
+msgid "Appearance"
+msgstr "外观"
+
+#: plugin.c:618
+msgid "Square button"
+msgstr "方形按钮"
+
+#: plugin.c:623
+msgid "Plugin size:"
+msgstr "插件大小："
+
+#: plugin.c:637
+msgid "Use panel size"
+msgstr "使用面板大小"
+
+#: plugin.c:642
+msgid "Icon size:"
+msgstr "图标大小："
+
+#: plugin.c:656
+msgid "Popup width:"
+msgstr "窗口宽度："
+
+#: plugin.c:664
+msgid "Popup height:"
+msgstr "窗口高度："
+
+#: plugin.c:677
+msgid "Show separators"
+msgstr "显示分隔线"
+
+#: plugin.c:683
+msgid "Show devices without a name"
+msgstr "显示没有名称的设备"
+
+#: plugin.c:689
+msgid "Hide the icon when Bluetooth is off"
+msgstr "蓝牙关闭时隐藏图标"
+
+#: plugin.c:696
+msgid "Show notifications"
+msgstr "显示通知"
+
+#: plugin.c:718 bt-dbus.c:806
+msgid "File transfer"
+msgstr "文件传输"
+
+#: plugin.c:749
+msgid "Receive files from other devices"
+msgstr "接收来自其他设备的文件"
+
+#: plugin.c:757
+msgid "Save to:"
+msgstr "保存到："
+
+#: plugin.c:762
+msgid "Destination folder"
+msgstr "目标文件夹"
+
+#: plugin.c:805
+msgid "Fix automatically"
+msgstr "自动修复"
+
+#: plugin.c:892
+#, c-format
+msgid "%s connected"
+msgstr "%s 已连接"
+
+#: plugin.c:893 plugin.c:900 plugin.c:1052 popup-sections.c:578
+#: bt-obex-agent.c:274
+msgid "Bluetooth"
+msgstr "蓝牙"
+
+#: plugin.c:898
+#, c-format
+msgid "%s disconnected"
+msgstr "%s 已断开"
+
+#: plugin.c:899
+msgid "Device disconnected"
+msgstr "设备已断开"
+
+#: plugin.c:916 popup-sections.c:210
+msgid "No Bluetooth adapter"
+msgstr "没有蓝牙适配器"
+
+#: plugin.c:918 popup-sections.c:212
+msgid "Bluetooth is off"
+msgstr "蓝牙已关闭"
+
+#: plugin.c:920
+msgid "Bluetooth on — no devices connected"
+msgstr "蓝牙已开启 — 没有已连接的设备"
+
+#: plugin.c:922 popup-sections.c:216
+#, c-format
+msgid "Connected to %s"
+msgstr "已连接到 %s"
+
+#: plugin.c:924 popup-sections.c:218
+#, c-format
+msgid "%d devices connected"
+msgstr "已连接 %d 个设备"
+
+#: plugin.c:1028 plugin.c:1032
+msgid "There is already another instance of this plugin on the panel."
+msgstr "面板上已有此插件的另一个实例。"
+
+#: plugin.c:1034
+msgid ""
+"This instance will remain inactive. Remove it from the panel to avoid "
+"confusion."
+msgstr "此实例将保持不活动状态。请将它从面板中移除，以免混淆。"
+
+#: plugin.c:1131
+msgid "Bluetooth manager plugin for the XFCE panel"
+msgstr "用于 XFCE 面板的蓝牙管理插件"
+
+#: popup.c:288
+msgid "The device did not answer. Make sure it is on and nearby."
+msgstr "设备没有响应。请确认它已开启并在附近。"
+
+#: popup.c:300
+msgid ""
+"This computer has no service for that profile. For audio profiles, the sound "
+"server provides it."
+msgstr "这台计算机没有该配置文件的服务。对于音频配置文件，由声音服务器提供。"
+
+#: popup.c:442 popup.c:775
+msgid "Connecting…"
+msgstr "正在连接…"
+
+#: popup.c:444
+msgid "Disconnecting…"
+msgstr "正在断开…"
+
+#: popup.c:445
+msgid "Pairing…"
+msgstr "正在配对…"
+
+#: popup.c:446
+msgid "Reconnecting…"
+msgstr "正在重新连接…"
+
+#: popup.c:447
+msgid "Removing…"
+msgstr "正在移除…"
+
+#: popup.c:558 popup-sections.c:563
+msgid "Search"
+msgstr "搜索"
+
+#: popup.c:573 popup-sections.c:562
+msgid "Searching…"
+msgstr "正在搜索…"
+
+#: popup.c:695 bt-obex-agent.c:299
+#, c-format
+msgid "%s of %s"
+msgstr "%s / %s"
+
+#: popup.c:706
+msgid "Sending…"
+msgstr "正在发送…"
+
+#: popup.c:711
+msgid "Waiting for the other device to accept…"
+msgstr "正在等待对方设备接受…"
+
+#: popup.c:745
+msgid "Send file"
+msgstr "发送文件"
+
+#: popup.c:762
+#, c-format
+msgid "To: %s"
+msgstr "发送至：%s"
+
+#: popup.c:784 popup.c:865 popup-rows.c:908 bt-agent.c:303 bt-agent.c:341
+#: bt-obex-agent.c:774
+msgid "Cancel"
+msgstr "取消"
+
+#: popup.c:845
+msgid "Could not reach the D-Bus session bus."
+msgstr "无法连接到 D-Bus 会话总线。"
+
+#: popup.c:864
+msgid "Select a file to send"
+msgstr "选择要发送的文件"
+
+#: popup.c:866
+msgid "Send"
+msgstr "发送"
+
+#: popup.c:1015
+msgid "Advanced settings…"
+msgstr "高级设置…"
+
+#: popup.c:1034
+msgid "Visible to other devices"
+msgstr "对其他设备可见"
+
+#: popup.c:1054
+#, c-format
+msgid ""
+"Other devices can find this computer for %d minutes; then it turns off by "
+"itself."
+msgstr "其他设备可以在 %d 分钟内发现这台计算机，之后会自动关闭。"
+
+#: popup-rows.c:254 popup-rows.c:521 popup-rows.c:851
+msgid "Disconnect"
+msgstr "断开连接"
+
+#: popup-rows.c:257 popup-rows.c:520 popup-rows.c:852
+msgid "Connect"
+msgstr "连接"
+
+#: popup-rows.c:260 popup-rows.c:853 bt-agent.c:343 bt-agent.c:448
+#: bt-agent.c:462
+msgid "Pair"
+msgstr "配对"
+
+#: popup-rows.c:296 popup-rows.c:866
+msgid "Reconnect"
+msgstr "重新连接"
+
+#: popup-rows.c:330 popup-rows.c:877 popup-rows.c:913
+msgid "Forget"
+msgstr "忘记"
+
+#: popup-rows.c:434
+msgid "Name:"
+msgstr "名称："
+
+#: popup-rows.c:452
+#, c-format
+msgid "Leave it empty to go back to the device's own name (%s)."
+msgstr "留空可恢复设备自身的名称（%s）。"
+
+#: popup-rows.c:455
+msgid "Leave it empty to go back to the device's own name."
+msgstr "留空可恢复设备自身的名称。"
+
+#: popup-rows.c:466
+msgid "Rename"
+msgstr "重命名"
+
+#: popup-rows.c:489
+msgid "High-quality audio (A2DP)"
+msgstr "高品质音频 (A2DP)"
+
+#: popup-rows.c:490
+msgid "Audio from the device (A2DP)"
+msgstr "来自设备的音频 (A2DP)"
+
+#: popup-rows.c:491
+msgid "Hands-free (HFP)"
+msgstr "免提 (HFP)"
+
+#: popup-rows.c:492
+msgid "Headset (HSP)"
+msgstr "耳机 (HSP)"
+
+#: popup-rows.c:493
+msgid "Keyboard / mouse (HID)"
+msgstr "键盘 / 鼠标 (HID)"
+
+#: popup-rows.c:547
+msgid "Connect a single profile"
+msgstr "连接单个配置文件"
+
+#: popup-rows.c:578
+msgid ""
+"To choose between high-quality sound and hands-free with microphone, use the "
+"sound settings: that choice belongs to the sound server, not to Bluetooth."
+msgstr ""
+"要在高品质声音和带麦克风的免提之间选择，请使用声音设置：这个选择由声音服务器"
+"决定，而不是蓝牙。"
+
+#: popup-rows.c:636
+msgid "Device name:"
+msgstr "设备名称："
+
+#: popup-rows.c:639
+msgid "Address:"
+msgstr "地址："
+
+#: popup-rows.c:642
+msgid "Profiles:"
+msgstr "配置文件："
+
+#: popup-rows.c:647
+msgid "Battery:"
+msgstr "电量："
+
+#: popup-rows.c:651
+#, c-format
+msgid "%d%% (%d dBm)"
+msgstr "%d%% (%d dBm)"
+
+#: popup-rows.c:654
+msgid "Signal:"
+msgstr "信号："
+
+#: popup-rows.c:657
+msgid "Paired:"
+msgstr "已配对："
+
+#: popup-rows.c:658
+msgid "Yes"
+msgstr "是"
+
+#: popup-rows.c:658
+msgid "No"
+msgstr "否"
+
+#: popup-rows.c:660
+msgid "Pairing:"
+msgstr "配对方式："
+
+#: popup-rows.c:660
+msgid "Legacy (PIN)"
+msgstr "旧式 (PIN)"
+
+#: popup-rows.c:680
+msgid "Blocked"
+msgstr "已屏蔽"
+
+#: popup-rows.c:684
+#, c-format
+msgid "Connected · Battery %d%%"
+msgstr "已连接 · 电量 %d%%"
+
+#: popup-rows.c:685
+msgid "Connected"
+msgstr "已连接"
+
+#: popup-rows.c:690
+msgid "Paired · Out of range"
+msgstr "已配对 · 超出范围"
+
+#: popup-rows.c:691
+#, c-format
+msgid "Paired · Signal %d%%"
+msgstr "已配对 · 信号 %d%%"
+
+#: popup-rows.c:696
+#, c-format
+msgid "Available · Signal %d%%"
+msgstr "可用 · 信号 %d%%"
+
+#: popup-rows.c:698
+msgid "Available"
+msgstr "可用"
+
+#: popup-rows.c:850
+msgid "Unblock"
+msgstr "取消屏蔽"
+
+#: popup-rows.c:868
+msgid ""
+"Disconnect and connect again. Often fixes a device that is connected but "
+"does not work."
+msgstr "断开后重新连接。设备已连接但无法正常工作时，这样做通常能解决问题。"
+
+#: popup-rows.c:890
+msgid "Forget this device?"
+msgstr "忘记此设备？"
+
+#: popup-rows.c:897
+msgid "You will have to pair it again to use it."
+msgstr "需要重新配对才能使用它。"
+
+#: popup-rows.c:930
+msgid "Send file…"
+msgstr "发送文件…"
+
+#: popup-rows.c:941
+msgid "Connect automatically"
+msgstr "自动连接"
+
+#: popup-rows.c:955
+msgid "Details"
+msgstr "详细信息"
+
+#: popup-rows.c:996
+msgid "Working…"
+msgstr "正在处理…"
+
+#: popup-sections.c:78
+msgid "Searching for devices…"
+msgstr "正在搜索设备…"
+
+#: popup-sections.c:79
+msgid "No devices found. Press Search."
+msgstr "未找到设备。请点击“搜索”。"
+
+#: popup-sections.c:80
+msgid "This adapter is switched off."
+msgstr "此适配器已关闭。"
+
+#: popup-sections.c:214
+msgid "No devices connected"
+msgstr "没有已连接的设备"
+
+#: popup-sections.c:453
+msgid "No Bluetooth adapter was found on this computer."
+msgstr "在这台计算机上未找到蓝牙适配器。"
+
+#: bt-dbus.c:801
+msgid "Audio"
+msgstr "音频"
+
+#: bt-dbus.c:802
+msgid "Hands-free"
+msgstr "免提"
+
+#: bt-dbus.c:803
+msgid "Remote control"
+msgstr "遥控"
+
+#: bt-dbus.c:804
+msgid "Keyboard/Mouse"
+msgstr "键盘/鼠标"
+
+#: bt-dbus.c:805
+msgid "Network"
+msgstr "网络"
+
+#: bt-dbus.c:807
+msgid "Contacts/Messages"
+msgstr "联系人/消息"
+
+#: bt-dbus.c:1160
+msgid "Pairing failed: the code did not match."
+msgstr "配对失败：代码不匹配。"
+
+#: bt-dbus.c:1162
+msgid "Pairing was cancelled."
+msgstr "配对已取消。"
+
+#: bt-dbus.c:1164
+msgid "The device rejected the pairing."
+msgstr "设备拒绝了配对。"
+
+#: bt-dbus.c:1166
+msgid "The device did not answer in time."
+msgstr "设备未及时响应。"
+
+#: bt-dbus.c:1168
+msgid "Could not connect. Make sure the device is on and nearby."
+msgstr "无法连接。请确认设备已开启并在附近。"
+
+#: bt-dbus.c:1170
+msgid "The device is already paired."
+msgstr "设备已配对。"
+
+#: bt-dbus.c:1172
+msgid "The device is already connected."
+msgstr "设备已连接。"
+
+#: bt-dbus.c:1174
+msgid "Another operation is already running on this device."
+msgstr "此设备上已有另一个操作正在进行。"
+
+#: bt-dbus.c:1176
+msgid "The adapter is not ready."
+msgstr "适配器尚未就绪。"
+
+#: bt-dbus.c:1179
+msgid "The device does not support this operation."
+msgstr "设备不支持此操作。"
+
+#: bt-dbus.c:1181
+msgid "The operation failed. Try again."
+msgstr "操作失败。请重试。"
+
+#: bt-dbus.c:1186
+msgid "The operation failed."
+msgstr "操作失败。"
+
+#: bt-agent.c:288 bt-agent.c:329 bt-agent.c:377
+msgid "Bluetooth pairing"
+msgstr "蓝牙配对"
+
+#: bt-agent.c:379
+msgid "Type this code on the other device and confirm."
+msgstr "请在另一台设备上输入此代码并确认。"
+
+#: bt-agent.c:444 bt-agent.c:458
+#, c-format
+msgid "Pair with “%s”?"
+msgstr "要与“%s”配对吗？"
+
+#: bt-agent.c:447
+msgid "Check that the same code is shown on the other device."
+msgstr "请确认另一台设备上显示的是相同的代码。"
+
+#: bt-agent.c:460
+msgid ""
+"This device does not show a confirmation code. Only accept if you started "
+"the pairing yourself."
+msgstr "此设备不显示确认代码。仅当配对是由你发起时才接受。"
+
+#: bt-agent.c:474
+#, c-format
+msgid "Allow “%s” to connect?"
+msgstr "允许“%s”连接吗？"
+
+#: bt-agent.c:476
+#, c-format
+msgid "Requested service: %s"
+msgstr "请求的服务：%s"
+
+#: bt-agent.c:477
+msgid "The device is asking to use a service on this computer."
+msgstr "该设备请求使用这台计算机上的服务。"
+
+#: bt-agent.c:480
+msgid "Allow"
+msgstr "允许"
+
+#: bt-agent.c:490
+#, c-format
+msgid "Enter the PIN for “%s”"
+msgstr "输入“%s”的 PIN 码"
+
+#: bt-agent.c:492
+msgid "Older devices usually use 0000 or 1234."
+msgstr "较旧的设备通常使用 0000 或 1234。"
+
+#: bt-agent.c:502
+#, c-format
+msgid "Enter the code for “%s”"
+msgstr "输入“%s”的代码"
+
+#: bt-agent.c:504
+msgid "Type the code shown on the other device."
+msgstr "请输入另一台设备上显示的代码。"
+
+#: bt-agent.c:514 bt-agent.c:529
+#, c-format
+msgid "Pairing with “%s”"
+msgstr "正在与“%s”配对"
+
+#: bt-obex.c:261
+msgid "File transfer: ready"
+msgstr "文件传输：就绪"
+
+#: bt-obex.c:263
+msgid "File transfer: service installed but not enabled"
+msgstr "文件传输：服务已安装但未启用"
+
+#: bt-obex.c:265
+msgid "File transfer: service not installed"
+msgstr "文件传输：服务未安装"
+
+#: bt-obex.c:268
+msgid "File transfer: session bus unavailable"
+msgstr "文件传输：会话总线不可用"
+
+#: bt-obex.c:281
+msgid ""
+"Enable it with:\n"
+"systemctl --user enable --now obex.service"
+msgstr ""
+"使用以下命令启用：\n"
+"systemctl --user enable --now obex.service"
+
+#: bt-obex.c:285
+#, c-format
+msgid ""
+"Install the package \"%s\", then run:\n"
+"systemctl --user enable --now obex.service"
+msgstr ""
+"请安装软件包“%s”，然后运行：\n"
+"systemctl --user enable --now obex.service"
+
+#: bt-obex.c:292
+msgid "The plugin could not reach the D-Bus session bus."
+msgstr "插件无法连接到 D-Bus 会话总线。"
+
+#: bt-obex.c:423
+#, c-format
+msgid "Could not create %s: %s"
+msgstr "无法创建 %s：%s"
+
+#: bt-obex.c:548 bt-obex.c:579
+msgid "Unknown error."
+msgstr "未知错误。"
+
+#: bt-obex.c:551 bt-obex.c:629
+msgid "Cancelled."
+msgstr "已取消。"
+
+#: bt-obex.c:559
+#, c-format
+msgid ""
+"The Bluetooth file transfer service is not available. Install the package "
+"\"%s\"."
+msgstr "蓝牙文件传输服务不可用。请安装软件包“%s”。"
+
+#: bt-obex.c:575
+msgid "This device does not accept files."
+msgstr "此设备不接受文件。"
+
+#: bt-obex.c:662 bt-obex.c:739
+msgid "File sent."
+msgstr "文件已发送。"
+
+#: bt-obex.c:666
+msgid "The device rejected the file or the transfer was interrupted."
+msgstr "设备拒绝了文件，或传输被中断。"
+
+#: bt-obex.c:740
+msgid "The transfer ended unexpectedly."
+msgstr "传输意外结束。"
+
+#: bt-obex-agent.c:175
+msgid "Unknown device"
+msgstr "未知设备"
+
+#: bt-obex-agent.c:263 bt-obex-agent.c:731
+msgid "file"
+msgstr "文件"
+
+#: bt-obex-agent.c:267
+#, c-format
+msgid "%s received from %s"
+msgstr "已收到 %s（来自 %s）"
+
+#: bt-obex-agent.c:269 bt-obex-agent.c:741
+msgid "a device"
+msgstr "某台设备"
+
+#: bt-obex-agent.c:271
+#, c-format
+msgid "Could not receive %s"
+msgstr "无法接收 %s"
+
+#: bt-obex-agent.c:320
+msgid "Receiving…"
+msgstr "正在接收…"
+
+#: bt-obex-agent.c:381
+msgid ""
+"The transfer was interrupted or the file transfer service could not write to "
+"the destination folder."
+msgstr "传输被中断，或文件传输服务无法写入目标文件夹。"
+
+#: bt-obex-agent.c:390
+#, c-format
+msgid ""
+"File received. Saved in:\n"
+"%s"
+msgstr ""
+"已收到文件。保存在：\n"
+"%s"
+
+#: bt-obex-agent.c:415
+#, c-format
+msgid ""
+"Nothing arrived from the other device for %d seconds, so the transfer was "
+"given up."
+msgstr "另一台设备在 %d 秒内没有发来任何数据，因此已放弃传输。"
+
+#: bt-obex-agent.c:719
+msgid "Receiving file"
+msgstr "正在接收文件"
+
+#: bt-obex-agent.c:739
+#, c-format
+msgid "From: %s"
+msgstr "来自：%s"
+
+#: bt-obex-agent.c:754
+msgid "Waiting for data…"
+msgstr "正在等待数据…"
+
+#: bt-obex-agent.c:766
+msgid "Show in folder"
+msgstr "在文件夹中显示"
+
+#: bt-obex-agent.c:956
+#, c-format
+msgid "%s wants to send you a file"
+msgstr "%s 想要向你发送文件"
+
+#: bt-obex-agent.c:966
+#, c-format
+msgid ""
+"%s  (%s)\n"
+"\n"
+"It will be saved in:\n"
+"%s"
+msgstr ""
+"%s  (%s)\n"
+"\n"
+"将保存到：\n"
+"%s"
+
+#: bt-obex-agent.c:970
+#, c-format
+msgid ""
+"%s\n"
+"\n"
+"It will be saved in:\n"
+"%s"
+msgstr ""
+"%s\n"
+"\n"
+"将保存到：\n"
+"%s"
+
+#: bt-obex-agent.c:977
+msgid "Reject"
+msgstr "拒绝"
+
+#: bt-obex-agent.c:978
+msgid "Accept"
+msgstr "接受"
+
+#: bt-obex-agent.c:1432
+msgid "Receiving files is off."
+msgstr "文件接收已关闭。"
+
+#: bt-obex-agent.c:1436
+msgid "Ready to receive files."
+msgstr "已准备好接收文件。"
+
+#: bt-obex-agent.c:1438
+msgid ""
+"Another program is already handling incoming files (Blueman, for example). "
+"Close it and this will take over on its own within a minute."
+msgstr ""
+"另一个程序（例如 Blueman）已在处理传入文件。关闭它后，此插件会在一分钟内自动"
+"接管。"
+
+#: bt-obex-agent.c:1443
+msgid "Waiting for the file transfer service…"
+msgstr "正在等待文件传输服务…"

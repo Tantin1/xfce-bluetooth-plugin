@@ -1,0 +1,818 @@
+# Русский translation of xfce-bluetooth-plugin.
+# Copyright (C) 2026 Tantin
+# This file is distributed under the same license as the xfce-bluetooth-plugin package.
+# Machine-assisted translation; review by a native speaker is welcome.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: xfce-bluetooth-plugin 0.1.0\n"
+"Report-Msgid-Bugs-To: https://github.com/Tantin1/xfce-bluetooth-plugin/"
+"issues\n"
+"POT-Creation-Date: 2026-10-14 18:33+0000\n"
+"PO-Revision-Date: 2026-10-15 09:30-0300\n"
+"Last-Translator: Tantin\n"
+"Language-Team: Русский\n"
+"Language: ru\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
+"n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
+
+#: plugin.c:508
+#, c-format
+msgid ""
+"\"%s\" is a symlink. The file transfer service refuses to write through "
+"symlinks, so incoming files will fail here."
+msgstr ""
+"«%s» — символическая ссылка. Служба передачи файлов отказывается записывать "
+"через символические ссылки, поэтому входящие файлы сюда не сохранятся."
+
+#: plugin.c:513
+msgid ""
+"Some versions of the file transfer service reject every incoming file due to "
+"a bug in their own safety check — even without any symlink involved. Phones "
+"show this as \"transfer forbidden\". If reception keeps failing, try this "
+"fix; it does not require a symlink to be present."
+msgstr ""
+"Некоторые версии службы передачи файлов отклоняют любой входящий файл из-за "
+"ошибки в собственной проверке безопасности — даже без всяких символических "
+"ссылок. Телефоны показывают это как «передача запрещена». Если приём по-"
+"прежнему не работает, попробуйте это исправление; наличие символической "
+"ссылки для него не требуется."
+
+#: plugin.c:546
+msgid "Could not apply the fix"
+msgstr "Не удалось применить исправление"
+
+#: plugin.c:550
+msgid "Unknown error"
+msgstr "Неизвестная ошибка"
+
+#: plugin.c:601
+msgid "Properties — Bluetooth"
+msgstr "Свойства — Bluetooth"
+
+#: plugin.c:603 popup.c:680 bt-agent.c:391 bt-obex-agent.c:374
+msgid "Close"
+msgstr "Закрыть"
+
+#: plugin.c:609
+msgid "Appearance"
+msgstr "Внешний вид"
+
+#: plugin.c:618
+msgid "Square button"
+msgstr "Квадратная кнопка"
+
+#: plugin.c:623
+msgid "Plugin size:"
+msgstr "Размер модуля:"
+
+#: plugin.c:637
+msgid "Use panel size"
+msgstr "Использовать размер панели"
+
+#: plugin.c:642
+msgid "Icon size:"
+msgstr "Размер значка:"
+
+#: plugin.c:656
+msgid "Popup width:"
+msgstr "Ширина окна:"
+
+#: plugin.c:664
+msgid "Popup height:"
+msgstr "Высота окна:"
+
+#: plugin.c:677
+msgid "Show separators"
+msgstr "Показывать разделители"
+
+#: plugin.c:683
+msgid "Show devices without a name"
+msgstr "Показывать устройства без имени"
+
+#: plugin.c:689
+msgid "Hide the icon when Bluetooth is off"
+msgstr "Скрывать значок, когда Bluetooth выключен"
+
+#: plugin.c:696
+msgid "Show notifications"
+msgstr "Показывать уведомления"
+
+#: plugin.c:718 bt-dbus.c:806
+msgid "File transfer"
+msgstr "Передача файлов"
+
+#: plugin.c:749
+msgid "Receive files from other devices"
+msgstr "Принимать файлы с других устройств"
+
+#: plugin.c:757
+msgid "Save to:"
+msgstr "Сохранять в:"
+
+#: plugin.c:762
+msgid "Destination folder"
+msgstr "Папка назначения"
+
+#: plugin.c:805
+msgid "Fix automatically"
+msgstr "Исправить автоматически"
+
+#: plugin.c:892
+#, c-format
+msgid "%s connected"
+msgstr "%s: подключено"
+
+#: plugin.c:893 plugin.c:900 plugin.c:1052 popup-sections.c:578
+#: bt-obex-agent.c:274
+msgid "Bluetooth"
+msgstr "Bluetooth"
+
+#: plugin.c:898
+#, c-format
+msgid "%s disconnected"
+msgstr "%s: отключено"
+
+#: plugin.c:899
+msgid "Device disconnected"
+msgstr "Устройство отключено"
+
+#: plugin.c:916 popup-sections.c:210
+msgid "No Bluetooth adapter"
+msgstr "Нет адаптера Bluetooth"
+
+#: plugin.c:918 popup-sections.c:212
+msgid "Bluetooth is off"
+msgstr "Bluetooth выключен"
+
+#: plugin.c:920
+msgid "Bluetooth on — no devices connected"
+msgstr "Bluetooth включён — нет подключённых устройств"
+
+#: plugin.c:922 popup-sections.c:216
+#, c-format
+msgid "Connected to %s"
+msgstr "Подключено: %s"
+
+#: plugin.c:924 popup-sections.c:218
+#, c-format
+msgid "%d devices connected"
+msgstr "Подключено устройств: %d"
+
+#: plugin.c:1028 plugin.c:1032
+msgid "There is already another instance of this plugin on the panel."
+msgstr "На панели уже есть другой экземпляр этого модуля."
+
+#: plugin.c:1034
+msgid ""
+"This instance will remain inactive. Remove it from the panel to avoid "
+"confusion."
+msgstr ""
+"Этот экземпляр останется неактивным. Удалите его с панели, чтобы избежать "
+"путаницы."
+
+#: plugin.c:1131
+msgid "Bluetooth manager plugin for the XFCE panel"
+msgstr "Модуль управления Bluetooth для панели XFCE"
+
+#: popup.c:288
+msgid "The device did not answer. Make sure it is on and nearby."
+msgstr "Устройство не ответило. Убедитесь, что оно включено и находится рядом."
+
+#: popup.c:300
+msgid ""
+"This computer has no service for that profile. For audio profiles, the sound "
+"server provides it."
+msgstr ""
+"На этом компьютере нет службы для этого профиля. Для звуковых профилей её "
+"предоставляет звуковой сервер."
+
+#: popup.c:442 popup.c:775
+msgid "Connecting…"
+msgstr "Подключение…"
+
+#: popup.c:444
+msgid "Disconnecting…"
+msgstr "Отключение…"
+
+#: popup.c:445
+msgid "Pairing…"
+msgstr "Сопряжение…"
+
+#: popup.c:446
+msgid "Reconnecting…"
+msgstr "Переподключение…"
+
+#: popup.c:447
+msgid "Removing…"
+msgstr "Удаление…"
+
+#: popup.c:558 popup-sections.c:563
+msgid "Search"
+msgstr "Поиск"
+
+#: popup.c:573 popup-sections.c:562
+msgid "Searching…"
+msgstr "Идёт поиск…"
+
+#: popup.c:695 bt-obex-agent.c:299
+#, c-format
+msgid "%s of %s"
+msgstr "%s из %s"
+
+#: popup.c:706
+msgid "Sending…"
+msgstr "Отправка…"
+
+#: popup.c:711
+msgid "Waiting for the other device to accept…"
+msgstr "Ожидание подтверждения от другого устройства…"
+
+#: popup.c:745
+msgid "Send file"
+msgstr "Отправить файл"
+
+#: popup.c:762
+#, c-format
+msgid "To: %s"
+msgstr "Получатель: %s"
+
+#: popup.c:784 popup.c:865 popup-rows.c:908 bt-agent.c:303 bt-agent.c:341
+#: bt-obex-agent.c:774
+msgid "Cancel"
+msgstr "Отмена"
+
+#: popup.c:845
+msgid "Could not reach the D-Bus session bus."
+msgstr "Не удалось подключиться к сеансовой шине D-Bus."
+
+#: popup.c:864
+msgid "Select a file to send"
+msgstr "Выберите файл для отправки"
+
+#: popup.c:866
+msgid "Send"
+msgstr "Отправить"
+
+#: popup.c:1015
+msgid "Advanced settings…"
+msgstr "Дополнительные настройки…"
+
+#: popup.c:1034
+msgid "Visible to other devices"
+msgstr "Видимость для других устройств"
+
+#: popup.c:1054
+#, c-format
+msgid ""
+"Other devices can find this computer for %d minutes; then it turns off by "
+"itself."
+msgstr ""
+"Другие устройства могут обнаружить этот компьютер в течение %d мин.; затем "
+"видимость отключится сама."
+
+#: popup-rows.c:254 popup-rows.c:521 popup-rows.c:851
+msgid "Disconnect"
+msgstr "Отключить"
+
+#: popup-rows.c:257 popup-rows.c:520 popup-rows.c:852
+msgid "Connect"
+msgstr "Подключить"
+
+#: popup-rows.c:260 popup-rows.c:853 bt-agent.c:343 bt-agent.c:448
+#: bt-agent.c:462
+msgid "Pair"
+msgstr "Создать пару"
+
+#: popup-rows.c:296 popup-rows.c:866
+msgid "Reconnect"
+msgstr "Переподключить"
+
+#: popup-rows.c:330 popup-rows.c:877 popup-rows.c:913
+msgid "Forget"
+msgstr "Забыть"
+
+#: popup-rows.c:434
+msgid "Name:"
+msgstr "Имя:"
+
+#: popup-rows.c:452
+#, c-format
+msgid "Leave it empty to go back to the device's own name (%s)."
+msgstr "Оставьте поле пустым, чтобы вернуть собственное имя устройства (%s)."
+
+#: popup-rows.c:455
+msgid "Leave it empty to go back to the device's own name."
+msgstr "Оставьте поле пустым, чтобы вернуть собственное имя устройства."
+
+#: popup-rows.c:466
+msgid "Rename"
+msgstr "Переименовать"
+
+#: popup-rows.c:489
+msgid "High-quality audio (A2DP)"
+msgstr "Звук высокого качества (A2DP)"
+
+#: popup-rows.c:490
+msgid "Audio from the device (A2DP)"
+msgstr "Звук с устройства (A2DP)"
+
+#: popup-rows.c:491
+msgid "Hands-free (HFP)"
+msgstr "Громкая связь (HFP)"
+
+#: popup-rows.c:492
+msgid "Headset (HSP)"
+msgstr "Гарнитура (HSP)"
+
+#: popup-rows.c:493
+msgid "Keyboard / mouse (HID)"
+msgstr "Клавиатура / мышь (HID)"
+
+#: popup-rows.c:547
+msgid "Connect a single profile"
+msgstr "Подключить отдельный профиль"
+
+#: popup-rows.c:578
+msgid ""
+"To choose between high-quality sound and hands-free with microphone, use the "
+"sound settings: that choice belongs to the sound server, not to Bluetooth."
+msgstr ""
+"Чтобы выбрать между звуком высокого качества и громкой связью с микрофоном, "
+"используйте настройки звука: этот выбор делает звуковой сервер, а не "
+"Bluetooth."
+
+#: popup-rows.c:636
+msgid "Device name:"
+msgstr "Имя устройства:"
+
+#: popup-rows.c:639
+msgid "Address:"
+msgstr "Адрес:"
+
+#: popup-rows.c:642
+msgid "Profiles:"
+msgstr "Профили:"
+
+#: popup-rows.c:647
+msgid "Battery:"
+msgstr "Батарея:"
+
+#: popup-rows.c:651
+#, c-format
+msgid "%d%% (%d dBm)"
+msgstr "%d%% (%d дБм)"
+
+#: popup-rows.c:654
+msgid "Signal:"
+msgstr "Сигнал:"
+
+#: popup-rows.c:657
+msgid "Paired:"
+msgstr "Сопряжено:"
+
+#: popup-rows.c:658
+msgid "Yes"
+msgstr "Да"
+
+#: popup-rows.c:658
+msgid "No"
+msgstr "Нет"
+
+#: popup-rows.c:660
+msgid "Pairing:"
+msgstr "Сопряжение:"
+
+#: popup-rows.c:660
+msgid "Legacy (PIN)"
+msgstr "Устаревшее (PIN-код)"
+
+#: popup-rows.c:680
+msgid "Blocked"
+msgstr "Заблокировано"
+
+#: popup-rows.c:684
+#, c-format
+msgid "Connected · Battery %d%%"
+msgstr "Подключено · Батарея %d%%"
+
+#: popup-rows.c:685
+msgid "Connected"
+msgstr "Подключено"
+
+#: popup-rows.c:690
+msgid "Paired · Out of range"
+msgstr "Сопряжено · Вне зоны действия"
+
+#: popup-rows.c:691
+#, c-format
+msgid "Paired · Signal %d%%"
+msgstr "Сопряжено · Сигнал %d%%"
+
+#: popup-rows.c:696
+#, c-format
+msgid "Available · Signal %d%%"
+msgstr "Доступно · Сигнал %d%%"
+
+#: popup-rows.c:698
+msgid "Available"
+msgstr "Доступно"
+
+#: popup-rows.c:850
+msgid "Unblock"
+msgstr "Разблокировать"
+
+#: popup-rows.c:868
+msgid ""
+"Disconnect and connect again. Often fixes a device that is connected but "
+"does not work."
+msgstr ""
+"Отключить и подключить снова. Часто помогает, если устройство подключено, но "
+"не работает."
+
+#: popup-rows.c:890
+msgid "Forget this device?"
+msgstr "Забыть это устройство?"
+
+#: popup-rows.c:897
+msgid "You will have to pair it again to use it."
+msgstr "Чтобы снова им пользоваться, нужно будет повторить сопряжение."
+
+#: popup-rows.c:930
+msgid "Send file…"
+msgstr "Отправить файл…"
+
+#: popup-rows.c:941
+msgid "Connect automatically"
+msgstr "Подключаться автоматически"
+
+#: popup-rows.c:955
+msgid "Details"
+msgstr "Подробности"
+
+#: popup-rows.c:996
+msgid "Working…"
+msgstr "Выполняется…"
+
+#: popup-sections.c:78
+msgid "Searching for devices…"
+msgstr "Поиск устройств…"
+
+#: popup-sections.c:79
+msgid "No devices found. Press Search."
+msgstr "Устройства не найдены. Нажмите «Поиск»."
+
+#: popup-sections.c:80
+msgid "This adapter is switched off."
+msgstr "Этот адаптер выключен."
+
+#: popup-sections.c:214
+msgid "No devices connected"
+msgstr "Нет подключённых устройств"
+
+#: popup-sections.c:453
+msgid "No Bluetooth adapter was found on this computer."
+msgstr "На этом компьютере не найден адаптер Bluetooth."
+
+#: bt-dbus.c:801
+msgid "Audio"
+msgstr "Звук"
+
+#: bt-dbus.c:802
+msgid "Hands-free"
+msgstr "Громкая связь"
+
+#: bt-dbus.c:803
+msgid "Remote control"
+msgstr "Пульт управления"
+
+#: bt-dbus.c:804
+msgid "Keyboard/Mouse"
+msgstr "Клавиатура/мышь"
+
+#: bt-dbus.c:805
+msgid "Network"
+msgstr "Сеть"
+
+#: bt-dbus.c:807
+msgid "Contacts/Messages"
+msgstr "Контакты/сообщения"
+
+#: bt-dbus.c:1160
+msgid "Pairing failed: the code did not match."
+msgstr "Сопряжение не удалось: код не совпал."
+
+#: bt-dbus.c:1162
+msgid "Pairing was cancelled."
+msgstr "Сопряжение отменено."
+
+#: bt-dbus.c:1164
+msgid "The device rejected the pairing."
+msgstr "Устройство отклонило сопряжение."
+
+#: bt-dbus.c:1166
+msgid "The device did not answer in time."
+msgstr "Устройство не ответило вовремя."
+
+#: bt-dbus.c:1168
+msgid "Could not connect. Make sure the device is on and nearby."
+msgstr ""
+"Не удалось подключиться. Убедитесь, что устройство включено и находится "
+"рядом."
+
+#: bt-dbus.c:1170
+msgid "The device is already paired."
+msgstr "Устройство уже сопряжено."
+
+#: bt-dbus.c:1172
+msgid "The device is already connected."
+msgstr "Устройство уже подключено."
+
+#: bt-dbus.c:1174
+msgid "Another operation is already running on this device."
+msgstr "На этом устройстве уже выполняется другая операция."
+
+#: bt-dbus.c:1176
+msgid "The adapter is not ready."
+msgstr "Адаптер не готов."
+
+#: bt-dbus.c:1179
+msgid "The device does not support this operation."
+msgstr "Устройство не поддерживает эту операцию."
+
+#: bt-dbus.c:1181
+msgid "The operation failed. Try again."
+msgstr "Операция не удалась. Попробуйте ещё раз."
+
+#: bt-dbus.c:1186
+msgid "The operation failed."
+msgstr "Операция не удалась."
+
+#: bt-agent.c:288 bt-agent.c:329 bt-agent.c:377
+msgid "Bluetooth pairing"
+msgstr "Сопряжение Bluetooth"
+
+#: bt-agent.c:379
+msgid "Type this code on the other device and confirm."
+msgstr "Введите этот код на другом устройстве и подтвердите."
+
+#: bt-agent.c:444 bt-agent.c:458
+#, c-format
+msgid "Pair with “%s”?"
+msgstr "Создать пару с «%s»?"
+
+#: bt-agent.c:447
+msgid "Check that the same code is shown on the other device."
+msgstr "Убедитесь, что на другом устройстве отображается тот же код."
+
+#: bt-agent.c:460
+msgid ""
+"This device does not show a confirmation code. Only accept if you started "
+"the pairing yourself."
+msgstr ""
+"Это устройство не показывает код подтверждения. Принимайте, только если вы "
+"сами начали сопряжение."
+
+#: bt-agent.c:474
+#, c-format
+msgid "Allow “%s” to connect?"
+msgstr "Разрешить подключение «%s»?"
+
+#: bt-agent.c:476
+#, c-format
+msgid "Requested service: %s"
+msgstr "Запрошенная служба: %s"
+
+#: bt-agent.c:477
+msgid "The device is asking to use a service on this computer."
+msgstr "Устройство запрашивает доступ к службе этого компьютера."
+
+#: bt-agent.c:480
+msgid "Allow"
+msgstr "Разрешить"
+
+#: bt-agent.c:490
+#, c-format
+msgid "Enter the PIN for “%s”"
+msgstr "Введите PIN-код для «%s»"
+
+#: bt-agent.c:492
+msgid "Older devices usually use 0000 or 1234."
+msgstr "Старые устройства обычно используют 0000 или 1234."
+
+#: bt-agent.c:502
+#, c-format
+msgid "Enter the code for “%s”"
+msgstr "Введите код для «%s»"
+
+#: bt-agent.c:504
+msgid "Type the code shown on the other device."
+msgstr "Введите код, показанный на другом устройстве."
+
+#: bt-agent.c:514 bt-agent.c:529
+#, c-format
+msgid "Pairing with “%s”"
+msgstr "Сопряжение с «%s»"
+
+#: bt-obex.c:261
+msgid "File transfer: ready"
+msgstr "Передача файлов: готово"
+
+#: bt-obex.c:263
+msgid "File transfer: service installed but not enabled"
+msgstr "Передача файлов: служба установлена, но не включена"
+
+#: bt-obex.c:265
+msgid "File transfer: service not installed"
+msgstr "Передача файлов: служба не установлена"
+
+#: bt-obex.c:268
+msgid "File transfer: session bus unavailable"
+msgstr "Передача файлов: сеансовая шина недоступна"
+
+#: bt-obex.c:281
+msgid ""
+"Enable it with:\n"
+"systemctl --user enable --now obex.service"
+msgstr ""
+"Включите её командой:\n"
+"systemctl --user enable --now obex.service"
+
+#: bt-obex.c:285
+#, c-format
+msgid ""
+"Install the package \"%s\", then run:\n"
+"systemctl --user enable --now obex.service"
+msgstr ""
+"Установите пакет «%s», затем выполните:\n"
+"systemctl --user enable --now obex.service"
+
+#: bt-obex.c:292
+msgid "The plugin could not reach the D-Bus session bus."
+msgstr "Модулю не удалось подключиться к сеансовой шине D-Bus."
+
+#: bt-obex.c:423
+#, c-format
+msgid "Could not create %s: %s"
+msgstr "Не удалось создать %s: %s"
+
+#: bt-obex.c:548 bt-obex.c:579
+msgid "Unknown error."
+msgstr "Неизвестная ошибка."
+
+#: bt-obex.c:551 bt-obex.c:629
+msgid "Cancelled."
+msgstr "Отменено."
+
+#: bt-obex.c:559
+#, c-format
+msgid ""
+"The Bluetooth file transfer service is not available. Install the package "
+"\"%s\"."
+msgstr "Служба передачи файлов Bluetooth недоступна. Установите пакет «%s»."
+
+#: bt-obex.c:575
+msgid "This device does not accept files."
+msgstr "Это устройство не принимает файлы."
+
+#: bt-obex.c:662 bt-obex.c:739
+msgid "File sent."
+msgstr "Файл отправлен."
+
+#: bt-obex.c:666
+msgid "The device rejected the file or the transfer was interrupted."
+msgstr "Устройство отклонило файл, или передача была прервана."
+
+#: bt-obex.c:740
+msgid "The transfer ended unexpectedly."
+msgstr "Передача неожиданно завершилась."
+
+#: bt-obex-agent.c:175
+msgid "Unknown device"
+msgstr "Неизвестное устройство"
+
+#: bt-obex-agent.c:263 bt-obex-agent.c:731
+msgid "file"
+msgstr "файл"
+
+#: bt-obex-agent.c:267
+#, c-format
+msgid "%s received from %s"
+msgstr "Получено: %s. Отправитель: %s"
+
+#: bt-obex-agent.c:269 bt-obex-agent.c:741
+msgid "a device"
+msgstr "устройство"
+
+#: bt-obex-agent.c:271
+#, c-format
+msgid "Could not receive %s"
+msgstr "Не удалось получить: %s"
+
+#: bt-obex-agent.c:320
+msgid "Receiving…"
+msgstr "Приём…"
+
+#: bt-obex-agent.c:381
+msgid ""
+"The transfer was interrupted or the file transfer service could not write to "
+"the destination folder."
+msgstr ""
+"Передача была прервана, или служба передачи файлов не смогла записать в "
+"папку назначения."
+
+#: bt-obex-agent.c:390
+#, c-format
+msgid ""
+"File received. Saved in:\n"
+"%s"
+msgstr ""
+"Файл получен. Сохранён в:\n"
+"%s"
+
+#: bt-obex-agent.c:415
+#, c-format
+msgid ""
+"Nothing arrived from the other device for %d seconds, so the transfer was "
+"given up."
+msgstr ""
+"От другого устройства ничего не поступало %d с, поэтому передача прекращена."
+
+#: bt-obex-agent.c:719
+msgid "Receiving file"
+msgstr "Приём файла"
+
+#: bt-obex-agent.c:739
+#, c-format
+msgid "From: %s"
+msgstr "Отправитель: %s"
+
+#: bt-obex-agent.c:754
+msgid "Waiting for data…"
+msgstr "Ожидание данных…"
+
+#: bt-obex-agent.c:766
+msgid "Show in folder"
+msgstr "Показать в папке"
+
+#: bt-obex-agent.c:956
+#, c-format
+msgid "%s wants to send you a file"
+msgstr "%s хочет отправить вам файл"
+
+#: bt-obex-agent.c:966
+#, c-format
+msgid ""
+"%s  (%s)\n"
+"\n"
+"It will be saved in:\n"
+"%s"
+msgstr ""
+"%s  (%s)\n"
+"\n"
+"Будет сохранён в:\n"
+"%s"
+
+#: bt-obex-agent.c:970
+#, c-format
+msgid ""
+"%s\n"
+"\n"
+"It will be saved in:\n"
+"%s"
+msgstr ""
+"%s\n"
+"\n"
+"Будет сохранён в:\n"
+"%s"
+
+#: bt-obex-agent.c:977
+msgid "Reject"
+msgstr "Отклонить"
+
+#: bt-obex-agent.c:978
+msgid "Accept"
+msgstr "Принять"
+
+#: bt-obex-agent.c:1432
+msgid "Receiving files is off."
+msgstr "Приём файлов выключен."
+
+#: bt-obex-agent.c:1436
+msgid "Ready to receive files."
+msgstr "Готово к приёму файлов."
+
+#: bt-obex-agent.c:1438
+msgid ""
+"Another program is already handling incoming files (Blueman, for example). "
+"Close it and this will take over on its own within a minute."
+msgstr ""
+"Входящие файлы уже обрабатывает другая программа (например, Blueman). "
+"Закройте её, и этот модуль сам возьмёт эту задачу на себя в течение минуты."
+
+#: bt-obex-agent.c:1443
+msgid "Waiting for the file transfer service…"
+msgstr "Ожидание службы передачи файлов…"
