@@ -7,7 +7,7 @@
 #include "popup.h"
 #include "bt-obex.h"
 #include <gdk/gdkkeysyms.h>
-#include <glib/gi18n.h>
+#include <glib/gi18n-lib.h>
 
 /* Red de seguridad para operaciones que BlueZ nunca contesta (pasa cuando el
  * aparato desaparece a mitad del enlace). El pareo puede tardar lo que tarde

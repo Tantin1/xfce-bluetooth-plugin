@@ -6,6 +6,10 @@
 
 #include "popup-private.h"
 
+#ifdef GDK_WINDOWING_WAYLAND
+#include <gdk/gdkwayland.h>
+#endif
+
 typedef struct {
     BtPopup   *popup;
     GtkWidget *button;
@@ -100,6 +104,204 @@ position_popup (BtPopup *popup, GtkWidget *button)
         y = workarea.y;
 
     gtk_window_move (GTK_WINDOW (popup->window), x, y);
+}
+
+/* ================================================================
+ * Wayland
+ *
+ * Todo lo de X11 de arriba queda igual. En Wayland una ventana común no
+ * elige su posición (gtk_window_move se ignora) y el acaparamiento funciona
+ * distinto, así que la ventana emergente sigue otro camino:
+ *
+ *   1. Se hace "hija" del panel (transient_for) y se ubica junto al botón
+ *      con gdk_window_move_to_rect: el compositor la pone ahí.
+ *   2. El acaparamiento se pide ANTES de mostrarla y la muestra la función
+ *      "preparar" (como hace GtkMenu). Si se pide después, no hay
+ *      acaparamiento de verdad y la ventana no recibe el teclado (el campo
+ *      de renombrar quedaría sordo).
+ *   3. El compositor la cierra solo al hacer clic en OTRO programa. El panel
+ *      es el mismo programa, así que el clic en el panel o en el botón se
+ *      detecta a mano: durante el acaparamiento llega como si fuera en la
+ *      ventana emergente, con coordenadas fuera de su área.
+ *   4. Cuando el compositor la cierra, GTK la sigue creyendo visible: hay
+ *      que ocultarla del todo para que el resto (búsqueda, señales, botón)
+ *      se entere.
+ * ================================================================ */
+
+/* La ventana emergente abierta en Wayland, si hay una (ver
+ * popup_close_for_dialog). En X11 queda siempre en NULL. */
+static BtPopup *wl_open_popup = NULL;
+
+static gboolean
+popup_is_wayland (GtkWidget *w)
+{
+#ifdef GDK_WINDOWING_WAYLAND
+    return GDK_IS_WAYLAND_DISPLAY (gtk_widget_get_display (w));
+#else
+    (void) w;
+    return FALSE;
+#endif
+}
+
+/* Clic durante el acaparamiento: ¿adentro o afuera? La ventana del evento no
+ * alcanza (los clics en el panel también llegan a nombre nuestro), así que se
+ * llevan las coordenadas hasta la ventana propia y se miran. */
+static gboolean
+wl_on_button_press (GtkWidget *widget, GdkEventButton *ev, BtPopup *popup)
+{
+    (void) widget;
+    GdkWindow *own    = gtk_widget_get_window (popup->window);
+    GdkWindow *win    = ev->window;
+    gdouble    x      = ev->x, y = ev->y;
+    gboolean   inside = FALSE;
+
+    while (win != NULL && win != own) {
+        gdk_window_coords_to_parent (win, x, y, &x, &y);
+        win = gdk_window_get_effective_parent (win);
+    }
+    if (win == own)
+        inside = x >= 0 && y >= 0 &&
+                 x < gtk_widget_get_allocated_width  (popup->window) &&
+                 y < gtk_widget_get_allocated_height (popup->window);
+
+    WL_DEBUG ("wayland: clic %s (%.0f, %.0f) en ventana de %dx%d",
+              inside ? "adentro" : "afuera", x, y,
+              gtk_widget_get_allocated_width  (popup->window),
+              gtk_widget_get_allocated_height (popup->window));
+
+    if (inside)
+        return GDK_EVENT_PROPAGATE;
+
+    popup_hide (popup);
+    /* Consumirlo: si el clic fue en el botón del panel, que no la vuelva a
+     * abrir enseguida. */
+    return GDK_EVENT_STOP;
+}
+
+/* El compositor la cerró (clic en otro programa) o rompió el acaparamiento.
+ * Conectado una sola vez, al crearla; en X11 no hace nada.
+ *
+ * Probado con un compositor real: al cerrarla él, GTK 3 NO manda ni
+ * "unmap-event" ni "grab-broken-event"; lo único que llega es el cambio de
+ * estado de la ventana ("window-state-event") con la marca de retirada. Se
+ * escuchan los tres por si otro compositor se porta distinto.
+ *
+ * Solo cuenta si la ventana de verdad ya no está a la vista: el aviso de
+ * "dejó de mostrarse" de un cierre anterior puede llegar tarde, con la
+ * ventana ya reabierta, y la cerraría de nuevo sin motivo. */
+static gboolean
+wl_on_popup_gone (GtkWidget *widget, GdkEvent *ev, BtPopup *popup)
+{
+    if (popup_is_wayland (widget) && gtk_widget_get_visible (widget) &&
+        !gdk_window_is_visible (gtk_widget_get_window (widget))) {
+        WL_DEBUG ("wayland: el compositor cerró la ventana (%s)",
+                  ev->type == GDK_GRAB_BROKEN  ? "acaparamiento roto" :
+                  ev->type == GDK_WINDOW_STATE ? "estado: retirada"
+                                               : "dejó de mostrarse");
+        popup_hide (popup);
+    }
+    return GDK_EVENT_PROPAGATE;
+}
+
+static void
+wl_prepare_show (GdkSeat *seat, GdkWindow *window, gpointer data)
+{
+    (void) seat; (void) window;
+    gtk_widget_show_all (GTK_WIDGET (data));
+}
+
+static void
+popup_show_wayland (BtPopup *popup, XfcePanelPlugin *plugin, GtkWidget *button)
+{
+    GtkWidget *win      = popup->window;
+    GtkWidget *toplevel = gtk_widget_get_toplevel (button);   /* el panel */
+
+    if (GTK_IS_WINDOW (toplevel))
+        gtk_window_set_transient_for (GTK_WINDOW (win), GTK_WINDOW (toplevel));
+    gtk_widget_realize (win);
+
+    /* Rectángulo del botón, medido desde el panel. */
+    GdkRectangle rect = { 0, 0, 1, 1 };
+    if (GTK_IS_WINDOW (toplevel))
+        gtk_widget_translate_coordinates (button, toplevel, 0, 0,
+                                          &rect.x, &rect.y);
+    rect.width  = MAX (gtk_widget_get_allocated_width  (button), 1);
+    rect.height = MAX (gtk_widget_get_allocated_height (button), 1);
+
+    WL_DEBUG ("wayland: panel=%s flecha=%d botón=%d,%d %dx%d",
+              G_OBJECT_TYPE_NAME (toplevel),
+              (gint) xfce_panel_plugin_arrow_type (plugin),
+              rect.x, rect.y, rect.width, rect.height);
+
+    /* Anclajes según dónde está el panel. Dar vuelta solo en el eje que cruza
+     * el panel y correr solo a lo largo de él: con los dos ejes a la vez, si
+     * no entra, primero la espeja y queda un hueco contra el borde. */
+    GdkGravity     rect_anchor, win_anchor;
+    GdkAnchorHints hints;
+    switch (xfce_panel_plugin_arrow_type (plugin)) {
+        case GTK_ARROW_UP:      /* panel abajo */
+            rect_anchor = GDK_GRAVITY_NORTH_WEST;
+            win_anchor  = GDK_GRAVITY_SOUTH_WEST;
+            hints       = GDK_ANCHOR_FLIP_Y | GDK_ANCHOR_SLIDE_X;
+            break;
+        case GTK_ARROW_RIGHT:   /* panel a la izquierda */
+            rect_anchor = GDK_GRAVITY_NORTH_EAST;
+            win_anchor  = GDK_GRAVITY_NORTH_WEST;
+            hints       = GDK_ANCHOR_FLIP_X | GDK_ANCHOR_SLIDE_Y;
+            break;
+        case GTK_ARROW_LEFT:    /* panel a la derecha */
+            rect_anchor = GDK_GRAVITY_NORTH_WEST;
+            win_anchor  = GDK_GRAVITY_NORTH_EAST;
+            hints       = GDK_ANCHOR_FLIP_X | GDK_ANCHOR_SLIDE_Y;
+            break;
+        case GTK_ARROW_DOWN:    /* panel arriba */
+        default:
+            rect_anchor = GDK_GRAVITY_SOUTH_WEST;
+            win_anchor  = GDK_GRAVITY_NORTH_WEST;
+            hints       = GDK_ANCHOR_FLIP_Y | GDK_ANCHOR_SLIDE_X;
+            break;
+    }
+    gdk_window_move_to_rect (gtk_widget_get_window (win), &rect,
+                             rect_anchor, win_anchor, hints, 0, 0);
+
+    /* Acaparamiento ANTES de mostrar: la muestra wl_prepare_show. */
+    GdkSeat *seat = gdk_display_get_default_seat (gtk_widget_get_display (win));
+    GdkGrabStatus st = gdk_seat_grab (seat, gtk_widget_get_window (win),
+                                      GDK_SEAT_CAPABILITY_ALL, TRUE,
+                                      NULL, NULL, wl_prepare_show, win);
+    WL_DEBUG ("wayland: acaparamiento %s (estado %d)",
+              st == GDK_GRAB_SUCCESS ? "conseguido" : "FALLÓ", (gint) st);
+    if (!gtk_widget_get_visible (win))
+        gtk_widget_show_all (win);
+
+    if (st == GDK_GRAB_SUCCESS) {
+        /* Mismo grupo de ventanas que el panel, para que el acaparamiento de
+         * GTK abarque también sus clics. */
+        if (GTK_IS_WINDOW (toplevel))
+            gtk_window_group_add_window (
+                gtk_window_get_group (GTK_WINDOW (toplevel)), GTK_WINDOW (win));
+        gtk_grab_add (win);
+        WL_DEBUG ("wayland: acaparamiento de GTK %s",
+                  gtk_widget_has_grab (win) ? "activo" : "INACTIVO");
+        popup->press_handler =
+            g_signal_connect (win, "button-press-event",
+                              G_CALLBACK (wl_on_button_press), popup);
+    } else {
+        /* Sin acaparamiento: cerrar al perder el foco, como reserva. */
+        popup->press_handler =
+            g_signal_connect (win, "focus-out-event",
+                              G_CALLBACK (on_focus_out), popup);
+    }
+    wl_open_popup = popup;
+}
+
+void
+popup_close_for_dialog (void)
+{
+    if (wl_open_popup != NULL) {
+        WL_DEBUG ("wayland: se cierra la ventana para mostrar un cartel");
+        popup_hide (wl_open_popup);
+    }
 }
 
 /* ---------- tabla de errores por dispositivo ---------- */
@@ -476,11 +678,17 @@ op_start_full (BtPopup *popup, OpKind kind,
 GtkWidget *
 make_device_icon (const gchar *icon_name, gint icon_size)
 {
-    const gchar *names[4];
+    const gchar *names[5];
     gint n = 0;
 
     if (icon_name && *icon_name)
         names[n++] = icon_name;
+    /* Respaldo para los nombres finos de audio (ver av_icon_from_class en
+     * bt-dbus.c): si el tema no tiene, por ejemplo, "audio-speakers", queda
+     * el genérico de siempre antes que el logo de Bluetooth. */
+    if (icon_name && g_str_has_prefix (icon_name, "audio-") &&
+        g_strcmp0 (icon_name, "audio-card") != 0)
+        names[n++] = "audio-card";
     names[n++] = "bluetooth";
     names[n++] = "bluetooth-symbolic";
     names[n]   = NULL;
@@ -1060,6 +1268,15 @@ popup_create (XfcePanelPlugin *plugin, GtkWidget *button)
 
     g_signal_connect (win, "key-press-event", G_CALLBACK (on_key_press), popup);
 
+    /* Wayland: enterarse cuando el compositor la cierra solo. En X11 estos
+     * manejadores no hacen nada (ver wl_on_popup_gone). */
+    g_signal_connect (win, "unmap-event",
+                      G_CALLBACK (wl_on_popup_gone), popup);
+    g_signal_connect (win, "grab-broken-event",
+                      G_CALLBACK (wl_on_popup_gone), popup);
+    g_signal_connect (win, "window-state-event",
+                      G_CALLBACK (wl_on_popup_gone), popup);
+
     popup->window = win;
     popup->ops_in_progress = g_hash_table_new_full (g_str_hash, g_str_equal,
                                                     g_free, op_free);
@@ -1072,8 +1289,6 @@ void
 popup_show (BtPopup *popup, XfcePanelPlugin *plugin, GtkWidget *button,
             GDBusConnection *conn, gint popup_width, gint popup_height)
 {
-    (void) plugin;
-
     popup->conn         = conn;
     popup->popup_width  = popup_width;
     popup->popup_height = popup_height;
@@ -1095,12 +1310,16 @@ popup_show (BtPopup *popup, XfcePanelPlugin *plugin, GtkWidget *button,
         popup->signal_ids = bt_subscribe_signals (conn, on_bt_signal_popup,
                                                   popup);
 
-    gtk_widget_realize (popup->window);
-    position_popup (popup, button);
-    gtk_widget_show_all (popup->window);
-
     popup->button = button;
-    {
+
+    if (popup_is_wayland (popup->window)) {
+        popup_show_wayland (popup, plugin, button);
+    } else {
+        /* X11, como siempre. */
+        gtk_widget_realize (popup->window);
+        position_popup (popup, button);
+        gtk_widget_show_all (popup->window);
+
         GrabData *gd = g_new0 (GrabData, 1);
         gd->popup  = popup;
         gd->button = button;
@@ -1122,12 +1341,17 @@ popup_hide (BtPopup *popup)
     GdkDisplay *display;
     GdkSeat    *seat;
 
-    if (!gtk_widget_get_visible (popup->window))
+    if (!gtk_widget_get_visible (popup->window) || popup->hiding)
         return;
+    popup->hiding = TRUE;
+    if (wl_open_popup == popup)
+        wl_open_popup = NULL;
 
     display = gtk_widget_get_display (popup->window);
     seat    = gdk_display_get_default_seat (display);
     gdk_seat_ungrab (seat);
+    if (gtk_widget_has_grab (popup->window))
+        gtk_grab_remove (popup->window);   /* solo existe en Wayland */
 
     if (popup->press_handler) {
         g_signal_handler_disconnect (popup->window, popup->press_handler);
@@ -1164,7 +1388,20 @@ popup_hide (BtPopup *popup)
     }
     clear_open_highlight (popup);
 
+    /* Wayland: durante el acaparamiento el botón del panel no se entera de
+     * que el puntero se fue, y queda resaltado (y con el recuadro de foco)
+     * hasta volver a pasar por encima. */
+    if (popup->button != NULL && popup_is_wayland (popup->window)) {
+        gtk_widget_unset_state_flags (popup->button,
+                                      GTK_STATE_FLAG_PRELIGHT |
+                                      GTK_STATE_FLAG_ACTIVE);
+        GtkWidget *top = gtk_widget_get_toplevel (popup->button);
+        if (GTK_IS_WINDOW (top))
+            gtk_window_set_focus_visible (GTK_WINDOW (top), FALSE);
+    }
+
     gtk_widget_hide (popup->window);
+    popup->hiding = FALSE;
 }
 
 void

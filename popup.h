@@ -5,6 +5,12 @@
 #include <libxfce4panel/libxfce4panel.h>
 #include "bt-dbus.h"
 
+/* Mensajes de diagnóstico de Wayland. Silenciosos por omisión; se ven
+ * lanzando el panel con G_MESSAGES_DEBUG=xfce-bluetooth-plugin. Usan su
+ * propio dominio para no mezclarse con los de los otros plugins, que en
+ * Wayland viven en el mismo proceso. */
+#define WL_DEBUG(...) g_log ("xfce-bluetooth-plugin", G_LOG_LEVEL_DEBUG, __VA_ARGS__)
+
 typedef struct {
     GtkWidget *window;
     GtkWidget *top_box;
@@ -60,6 +66,11 @@ typedef struct {
 
     /* Puntero opaco al BtPlugin del panel. Usado para el spinner del botón. */
     gpointer   plugin_ref;
+
+    /* TRUE mientras corre popup_hide. En Wayland, soltar el acaparamiento
+     * puede disparar "grab-broken-event" en el acto, y ese manejador vuelve
+     * a llamar a popup_hide: la marca corta esa vuelta. */
+    gboolean   hiding;
 } BtPopup;
 
 /* Ícono de un dispositivo, con cadena de respaldo hasta el genérico. */
@@ -74,5 +85,11 @@ void     popup_show    (BtPopup *popup, XfcePanelPlugin *plugin,
                         gint popup_width, gint popup_height);
 void     popup_hide    (BtPopup *popup);
 void     popup_destroy (BtPopup *popup);
+
+/* Para los carteles que aparecen solos (pareo, recepción): en Wayland la
+ * ventana emergente abierta se queda con el teclado y el cartel no recibe lo
+ * que se escribe, así que hay que cerrarla antes. En X11 no hace nada: ahí
+ * alcanza con soltar el acaparamiento, como siempre. */
+void     popup_close_for_dialog (void);
 
 #endif /* POPUP_H */

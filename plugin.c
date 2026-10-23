@@ -8,7 +8,7 @@
 
 #include <libxfce4panel/libxfce4panel.h>
 #include <gtk/gtk.h>
-#include <glib/gi18n.h>
+#include <glib/gi18n-lib.h>
 #ifdef HAVE_LIBNOTIFY
 #include <libnotify/notify.h>
 #endif
@@ -48,7 +48,18 @@
  * con g_bus_own_name() y la bandera DO_NOT_QUEUE: el bus solo se lo da a
  * quien lo pide primero. El resultado llega por callback, asíncrono —
  * por eso bp->is_duplicate arranca en FALSE (default de g_new0) y recién
- * se define cuando el bus contesta. */
+ * se define cuando el bus contesta.
+ *
+ * WAYLAND: ahí el panel carga TODOS los plugins dentro de su propio
+ * proceso, así que dos instancias comparten memoria y también la conexión
+ * al bus de sesión. Pedir el mismo nombre dos veces desde una sola
+ * conexión no da "ocupado" sino "ya sos el dueño", y GDBus termina
+ * avisando "adquirido" a las dos y después "perdido" a la PRIMERA: quedaba
+ * desactivada la instancia equivocada. Por eso, además del bus, hay una
+ * marca de proceso (bt_real_instance): si ya hay una instancia real viva en
+ * este proceso, la nueva es duplicada en el acto y ni siquiera pide el
+ * nombre. En X11 cada instancia tiene su proceso, la marca nunca ve a la
+ * otra y decide el bus, como siempre. */
 #define BT_PLUGIN_SINGLETON_NAME "com.tantin.XfceBluetoothPluginInstance"
 
 typedef struct {
@@ -82,7 +93,7 @@ typedef struct {
 
     gboolean  busy;
     gboolean  notif_ready;
-    gboolean  is_duplicate;   /* TRUE si otra instancia ya tenía el nombre D-Bus */
+    gboolean  is_duplicate;   /* TRUE si otra instancia ya era la real (bus o proceso) */
     guint     name_owner_id;  /* id de g_bus_own_name(), para soltarlo al salir */
 
     /* Último estado conocido, para redibujar sin volver a consultar el bus
@@ -99,6 +110,12 @@ static void on_bt_name_acquired (GDBusConnection *conn, const gchar *name,
                                  gpointer user_data);
 static void on_bt_name_lost     (GDBusConnection *conn, const gchar *name,
                                  gpointer user_data);
+static void bt_plugin_show_duplicate (BtPlugin *bp);
+
+/* Instancia real de ESTE proceso (ver comentario junto a
+ * BT_PLUGIN_SINGLETON_NAME). Solo sirve en Wayland; en X11 queda siempre
+ * apuntando a la única instancia del proceso. */
+static gpointer bt_real_instance = NULL;
 
 /* ---------- ícono del botón del panel ---------- */
 
@@ -1023,6 +1040,14 @@ on_bt_name_lost (GDBusConnection *conn, const gchar *name, gpointer user_data)
         bp->obex_agent = NULL;
     }
 
+    bt_plugin_show_duplicate (bp);
+}
+
+/* Parte visible de "soy duplicada": botón apagado y aviso. La comparten el
+ * camino del bus (X11) y el de la marca de proceso (Wayland). */
+static void
+bt_plugin_show_duplicate (BtPlugin *bp)
+{
     gtk_widget_set_sensitive (bp->button, FALSE);
     gtk_widget_set_tooltip_text (bp->button,
         _("There is already another instance of this plugin on the panel."));
@@ -1042,7 +1067,11 @@ bt_plugin_new (XfcePanelPlugin *plugin)
     BtPlugin *bp = g_new0 (BtPlugin, 1);
     bp->plugin = plugin;
 
-    bp->is_duplicate = FALSE;
+    /* Wayland: ¿ya hay una instancia real en este mismo proceso? Entonces
+     * esta es duplicada desde ya, antes de registrar nada en el bus. */
+    bp->is_duplicate = (bt_real_instance != NULL);
+    if (!bp->is_duplicate)
+        bt_real_instance = bp;
     bp->conn   = bt_dbus_connect ();
 
     load_config (bp);
@@ -1082,7 +1111,7 @@ bt_plugin_new (XfcePanelPlugin *plugin)
      * todavía no sabemos si esta instancia es duplicada (esa respuesta llega
      * después, asíncrona, por g_bus_own_name). Si resulta serlo, se
      * desregistra en on_bt_name_lost. */
-    if (bp->conn)
+    if (bp->conn && !bp->is_duplicate)
         bp->agent = bt_agent_new (bp->conn);
 
     /* Receptor de archivos, si está prendido. Igual que el agente de pareo,
@@ -1093,7 +1122,7 @@ bt_plugin_new (XfcePanelPlugin *plugin)
     g_signal_connect (plugin, "size-changed", G_CALLBACK (on_size_changed), bp);
     g_signal_connect (bp->button, "toggled",  G_CALLBACK (on_button_toggled), bp);
 
-    if (bp->conn)
+    if (bp->conn && !bp->is_duplicate)
         bp->signal_ids = bt_subscribe_signals (bp->conn, on_bt_changed, bp);
     g_signal_connect (bp->popup->window, "hide",
                       G_CALLBACK (on_popup_hidden), bp);
@@ -1107,13 +1136,21 @@ bt_plugin_new (XfcePanelPlugin *plugin)
      * importante: sin ella, el bus haría cola y nos daría el nombre más
      * tarde si la primera instancia se cierra, lo cual no es lo que
      * queremos detectar acá. */
-    bp->name_owner_id = g_bus_own_name (
-        G_BUS_TYPE_SESSION, BT_PLUGIN_SINGLETON_NAME,
-        G_BUS_NAME_OWNER_FLAGS_DO_NOT_QUEUE,
-        NULL, on_bt_name_acquired, on_bt_name_lost, bp, NULL);
+    if (!bp->is_duplicate)
+        bp->name_owner_id = g_bus_own_name (
+            G_BUS_TYPE_SESSION, BT_PLUGIN_SINGLETON_NAME,
+            G_BUS_NAME_OWNER_FLAGS_DO_NOT_QUEUE,
+            NULL, on_bt_name_acquired, on_bt_name_lost, bp, NULL);
 
     xfce_panel_plugin_add_action_widget (plugin, bp->button);
     gtk_container_add (GTK_CONTAINER (plugin), bp->button);
+
+    /* Duplicada por la marca de proceso: se apaga ahora, después de que
+     * on_bt_changed_cb puso su tooltip, para que quede el de "duplicada". */
+    if (bp->is_duplicate) {
+        WL_DEBUG ("instancia duplicada en el mismo proceso: queda inactiva");
+        bt_plugin_show_duplicate (bp);
+    }
 
     return bp;
 }
@@ -1142,6 +1179,8 @@ static void
 bt_plugin_free (XfcePanelPlugin *plugin, BtPlugin *bp)
 {
     (void) plugin;
+    if (bt_real_instance == bp)
+        bt_real_instance = NULL;
     if (bp->name_owner_id)
         g_bus_unown_name (bp->name_owner_id);
     if (bp->signal_ids)
@@ -1165,7 +1204,9 @@ bt_plugin_construct (XfcePanelPlugin *plugin)
 {
     bindtextdomain (GETTEXT_PACKAGE, LOCALEDIR);
     bind_textdomain_codeset (GETTEXT_PACKAGE, "UTF-8");
-    textdomain (GETTEXT_PACKAGE);
+    /* Sin textdomain(): en Wayland todos los plugins viven en el proceso del
+     * panel y esa llamada cambia el idioma por omisión de TODOS. Los textos
+     * propios van por _() de <glib/gi18n-lib.h>, que nombra el dominio. */
 #ifdef HAVE_LIBNOTIFY
     notify_init ("xfce-bluetooth-plugin");
 #endif
