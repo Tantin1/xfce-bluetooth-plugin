@@ -22,9 +22,10 @@
 #include "bt-obex-agent.h"
 #include "bt-obex.h"
 #include "bt-dbus.h"
+#include "popup.h"
 
 #include <gtk/gtk.h>
-#include <glib/gi18n.h>
+#include <glib/gi18n-lib.h>
 #include <glib/gstdio.h>
 #include <string.h>
 
@@ -130,10 +131,12 @@ static void try_register (BtObexAgent *agent);
 /* La ventana emergente acapara el puntero mientras está abierta. Un cartel
  * que aparece por debajo de ese acaparamiento queda sordo al teclado y al
  * ratón, así que hay que soltarlo antes de mostrar nada. Mismo criterio que
- * en el agente de pareo. */
+ * en el agente de pareo, incluido el cierre de la ventana en Wayland. */
 static void
 release_seat_grab (void)
 {
+    popup_close_for_dialog ();
+
     GdkDisplay *display = gdk_display_get_default ();
     if (display == NULL)
         return;

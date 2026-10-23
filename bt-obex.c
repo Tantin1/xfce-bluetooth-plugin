@@ -30,7 +30,7 @@
 #include "bt-obex.h"
 
 #include <gio/gio.h>
-#include <glib/gi18n.h>
+#include <glib/gi18n-lib.h>
 #include <glib/gstdio.h>
 #include <string.h>
 #include <errno.h>

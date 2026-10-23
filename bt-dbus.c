@@ -9,7 +9,7 @@
  */
 
 #include "bt-dbus.h"
-#include <glib/gi18n.h>
+#include <glib/gi18n-lib.h>
 #include <string.h>
 
 /* ================================================================
@@ -815,9 +815,50 @@ bt_profiles_string (gchar **uuids)
     return out;
 }
 
+/* Ícono fino para la clase "audio y video", según la subcategoría (bits
+ * 2 a 7 de la clase). BlueZ solo distingue auriculares y cámaras: todo lo
+ * demás (parlantes, micrófonos, equipos de música, audio de auto, pantallas)
+ * lo manda a "audio-card", que varios temas, Papirus entre ellos, dibujan
+ * como una placa de sonido interna. Los números son los de la norma de
+ * Bluetooth (Assigned Numbers, clase mayor 0x04). Si el tema no tiene el
+ * nombre fino, make_device_icon cae en "audio-card" igual que antes. */
+static const gchar *
+av_icon_from_class (guint32 klass)
+{
+    switch ((klass >> 2) & 0x3F) {
+        case 0x01:              /* auriculares con micrófono */
+        case 0x02:              /* manos libres */
+            return "audio-headset";
+        case 0x04:              /* micrófono */
+            return "audio-input-microphone";
+        case 0x05:              /* parlante */
+        case 0x07:              /* audio portátil */
+        case 0x08:              /* audio de auto */
+        case 0x0A:              /* equipo de música */
+            return "audio-speakers";
+        case 0x06:              /* auriculares */
+            return "audio-headphones";
+        case 0x0B:              /* videograbadora */
+        case 0x0C:              /* cámara de video */
+        case 0x0D:              /* cámara con grabadora */
+            return "camera-video";
+        case 0x0E:              /* monitor de video */
+        case 0x0F:              /* pantalla con parlante (televisor) */
+            return "video-display";
+        default:
+            return "audio-card";
+    }
+}
+
 const gchar *
 bt_device_icon_name (const BtDevice *d)
 {
+    /* "audio-card" es el comodín de BlueZ para audio y video: se afina con
+     * la subcategoría, que el aparato sí informa (ver av_icon_from_class). */
+    if (d && d->icon && strcmp (d->icon, "audio-card") == 0 &&
+        ((d->klass >> 8) & 0x1F) == 0x04)
+        return av_icon_from_class (d->klass);
+
     if (d && d->icon && *d->icon)
         return d->icon;
 
@@ -828,7 +869,7 @@ bt_device_icon_name (const BtDevice *d)
             case 0x01: return "computer";
             case 0x02: return "phone";
             case 0x03: return "network-wireless";
-            case 0x04: return "audio-card";
+            case 0x04: return av_icon_from_class (d->klass);
             case 0x05: return "input-mouse";
             case 0x06: return "camera-photo";
             case 0x07: return "video-display";

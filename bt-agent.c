@@ -8,9 +8,10 @@
 
 #include "bt-agent.h"
 #include "bt-dbus.h"
+#include "popup.h"
 
 #include <gtk/gtk.h>
-#include <glib/gi18n.h>
+#include <glib/gi18n-lib.h>
 #include <string.h>
 #include <unistd.h>
 
@@ -82,10 +83,18 @@ static const gchar agent_introspection_xml[] =
 /* El popup toma el asa (seat grab) mientras está abierto. Un diálogo que
  * aparece por debajo de ese asa queda sordo al teclado y al ratón, así que
  * la soltamos antes de mostrar cualquier cosa del agente. El popup se cierra
- * solo al perder el foco, que es exactamente lo que queremos acá. */
+ * solo al perder el foco, que es exactamente lo que queremos acá.
+ *
+ * En Wayland soltar no alcanza: el compositor le sigue dando el teclado a la
+ * ventana emergente mientras exista, y el cartel del PIN no recibiría lo que
+ * se escribe. Ahí se la cierra (popup_close_for_dialog; en X11 no hace
+ * nada). Si el pareo se había pedido desde la ventana, sigue igual del lado
+ * de BlueZ: solo deja de mostrarse el "Trabajando…". */
 static void
 release_seat_grab (void)
 {
+    popup_close_for_dialog ();
+
     GdkDisplay *display = gdk_display_get_default ();
     if (!display)
         return;

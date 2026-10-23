@@ -7,8 +7,36 @@
 
 /* ---------- orden de las filas ---------- */
 
-/* Conectados primero, después emparejados, después el resto por señal.
- * Dentro de cada grupo, alfabético para que la lista no baile sola. */
+/* Nivel de cercanía de un aparato según su señal: 0 cerca, 1 a media
+ * distancia, 2 lejos, 3 sin señal.
+ *
+ * Durante una búsqueda la señal cambia varias veces por segundo. Si la lista
+ * se ordenara por el valor crudo, el refresco por diferencia reacomodaría las
+ * filas a cada temblor y el aparato al que el usuario iba a hacer clic se
+ * movería justo en ese instante. Agrupada en tres niveles, una fila solo
+ * cambia de lugar cuando el aparato cambia de distancia de verdad. */
+#define BT_RSSI_NEAR_DBM  (-60)
+#define BT_RSSI_MID_DBM   (-80)
+
+static gint
+device_rssi_band (const BtDevice *d)
+{
+    if (!d->has_rssi)
+        return 3;
+    if (d->rssi >= BT_RSSI_NEAR_DBM)
+        return 0;
+    if (d->rssi >= BT_RSSI_MID_DBM)
+        return 1;
+    return 2;
+}
+
+/* Conectados primero, después emparejados, después los de paso.
+ *
+ * Los emparejados (y cualquier conectado) van en orden alfabético, sin mirar
+ * la señal: son los aparatos del usuario y los busca por nombre. Los de paso
+ * se agrupan por nivel de cercanía y, dentro de cada nivel, también van en
+ * orden alfabético. El último desempate es la dirección, para que el orden no
+ * dependa de cómo vinieron los aparatos del bus. */
 static gint
 device_compare (gconstpointer a, gconstpointer b)
 {
@@ -19,12 +47,20 @@ device_compare (gconstpointer a, gconstpointer b)
         return da->connected ? -1 : 1;
     if (da->paired != db->paired)
         return da->paired ? -1 : 1;
-    if (da->has_rssi != db->has_rssi)
-        return da->has_rssi ? -1 : 1;
-    if (da->has_rssi && da->rssi != db->rssi)
-        return db->rssi - da->rssi;
 
-    return g_utf8_collate (da->name ? da->name : "", db->name ? db->name : "");
+    if (!da->paired && !da->connected) {
+        gint ba = device_rssi_band (da);
+        gint bb = device_rssi_band (db);
+        if (ba != bb)
+            return ba - bb;
+    }
+
+    gint by_name = g_utf8_collate (da->name ? da->name : "",
+                                   db->name ? db->name : "");
+    if (by_name != 0)
+        return by_name;
+
+    return g_strcmp0 (da->address, db->address);
 }
 
 /* Qué dispositivos merecen una fila.
