@@ -807,3 +807,37 @@ msgstr ""
 #: bt-obex-agent.c:1443
 msgid "Waiting for the file transfer service…"
 msgstr "파일 전송 서비스를 기다리는 중…"
+
+#: bt-obex.c:302
+#, c-format
+msgid "The session bus cannot start it. Log out and back in; if it persists, reinstall the package \"%s\"."
+msgstr "세션 버스가 서비스를 시작할 수 없습니다. 로그아웃했다가 다시 로그인하세요. 문제가 계속되면 '%s' 패키지를 다시 설치하세요."
+
+#: bt-obex.c:311
+#, c-format
+msgid "Install the package \"%s\"."
+msgstr "'%s' 패키지를 설치하세요."
+
+#: bt-obex.c:588
+msgid "The fix was saved, but the running service could not be restarted. Log out and back in to apply it."
+msgstr "해결 방법은 저장되었지만 실행 중인 서비스를 다시 시작할 수 없습니다. 적용하려면 로그아웃했다가 다시 로그인하세요."
+
+#: plugin.c:715
+msgid "Popup style:"
+msgstr "창 스타일:"
+
+#: plugin.c:721
+msgid "Automatic"
+msgstr "자동"
+
+#: plugin.c:723
+msgid "Floating"
+msgstr "떠 있음"
+
+#: plugin.c:725
+msgid "Attached to the panel"
+msgstr "패널에 붙임"
+
+#: plugin.c:728
+msgid "Automatic: floating with rounded corners when the theme rounds its popovers; otherwise attached to the panel."
+msgstr "자동: 테마가 팝오버의 모서리를 둥글게 하면 둥근 모서리로 떠 있고, 그렇지 않으면 패널에 붙습니다."

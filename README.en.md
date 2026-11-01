@@ -100,9 +100,14 @@ Building with CMake is also possible; see [DESARROLLO.md](DESARROLLO.md)
   systemctl status bluetooth
   ```
 
+  On distributions without systemd, use their own service tool (for
+  example `service bluetooth status`).
+
 - **The file transfer service**, only if you want to send or receive files.
   It comes in a separate package: `bluez-obex` on Arch, `bluez-obexd` on
-  Debian. On some distributions it also has to be enabled:
+  Debian. On some distributions with systemd it also has to be enabled
+  (without systemd there is nothing to enable: the system starts it on
+  demand):
 
   ```bash
   systemctl --user enable --now obex.service
@@ -130,7 +135,7 @@ from other devices", where you also pick the folder (Downloads by default).
 almost always to blame: some versions refuse to write when the folder goes
 through a symbolic link, and others reject everything because of a bug of
 their own. That same window shows a **"Fix automatically"** button that
-solves it without asking for a password.
+solves it without asking for a password, with or without systemd.
 
 **Only one program can receive files at a time.** If Blueman is running, the
 plugin tells you so and retries on its own every minute: just close Blueman.

@@ -810,3 +810,37 @@ msgstr ""
 #: bt-obex-agent.c:1443
 msgid "Waiting for the file transfer service…"
 msgstr "Dosya aktarım hizmeti bekleniyor…"
+
+#: bt-obex.c:302
+#, c-format
+msgid "The session bus cannot start it. Log out and back in; if it persists, reinstall the package \"%s\"."
+msgstr "Oturum veri yolu hizmeti başlatamıyor. Oturumu kapatıp yeniden açın; sorun devam ederse \"%s\" paketini yeniden kurun."
+
+#: bt-obex.c:311
+#, c-format
+msgid "Install the package \"%s\"."
+msgstr "\"%s\" paketini kurun."
+
+#: bt-obex.c:588
+msgid "The fix was saved, but the running service could not be restarted. Log out and back in to apply it."
+msgstr "Düzeltme kaydedildi, ancak çalışan hizmet yeniden başlatılamadı. Uygulamak için oturumu kapatıp yeniden açın."
+
+#: plugin.c:715
+msgid "Popup style:"
+msgstr "Pencere stili:"
+
+#: plugin.c:721
+msgid "Automatic"
+msgstr "Otomatik"
+
+#: plugin.c:723
+msgid "Floating"
+msgstr "Yüzen"
+
+#: plugin.c:725
+msgid "Attached to the panel"
+msgstr "Panele bitişik"
+
+#: plugin.c:728
+msgid "Automatic: floating with rounded corners when the theme rounds its popovers; otherwise attached to the panel."
+msgstr "Otomatik: tema açılır pencerelerini yuvarlatıyorsa yuvarlak köşeli ve yüzen; aksi halde panele bitişik."

@@ -25,6 +25,7 @@
 #define DEFAULT_POPUP_WIDTH         400
 #define DEFAULT_POPUP_HEIGHT        340
 #define DEFAULT_SHOW_SEPARATORS     TRUE
+#define DEFAULT_POPUP_STYLE         BT_POPUP_STYLE_AUTO
 #define DEFAULT_SHOW_NOTIFICATIONS  FALSE
 #define DEFAULT_SHOW_UNNAMED        TRUE
 #define DEFAULT_HIDE_WHEN_OFF       FALSE
@@ -79,6 +80,7 @@ typedef struct {
     gint      popup_width;
     gint      popup_height;
     gboolean  show_separators;
+    gint      popup_style;      /* BtPopupStyle (ver popup.h) */
     gboolean  show_notifications;
     gboolean  show_unnamed;
     gboolean  hide_when_off;
@@ -223,6 +225,7 @@ load_config (BtPlugin *bp)
     bp->popup_width        = DEFAULT_POPUP_WIDTH;
     bp->popup_height       = DEFAULT_POPUP_HEIGHT;
     bp->show_separators    = DEFAULT_SHOW_SEPARATORS;
+    bp->popup_style        = DEFAULT_POPUP_STYLE;
     bp->show_notifications = DEFAULT_SHOW_NOTIFICATIONS;
     bp->show_unnamed       = DEFAULT_SHOW_UNNAMED;
     bp->hide_when_off      = DEFAULT_HIDE_WHEN_OFF;
@@ -253,6 +256,10 @@ load_config (BtPlugin *bp)
     bp->show_separators = g_key_file_get_boolean (kf, "appearance", "show_separators", NULL);
     if (!g_key_file_has_key (kf, "appearance", "show_separators", NULL))
         bp->show_separators = DEFAULT_SHOW_SEPARATORS;
+    bp->popup_style = g_key_file_get_integer (kf, "appearance", "popup_style", NULL);
+    if (bp->popup_style < BT_POPUP_STYLE_AUTO ||
+        bp->popup_style > BT_POPUP_STYLE_ATTACHED)
+        bp->popup_style = DEFAULT_POPUP_STYLE;
 
     bp->show_notifications = g_key_file_get_boolean (kf, "appearance", "show_notifications", NULL);
     if (!g_key_file_has_key (kf, "appearance", "show_notifications", NULL))
@@ -307,6 +314,7 @@ save_config (BtPlugin *bp)
     g_key_file_set_integer (kf, "appearance", "popup_width",        bp->popup_width);
     g_key_file_set_integer (kf, "appearance", "popup_height",       bp->popup_height);
     g_key_file_set_boolean (kf, "appearance", "show_separators",    bp->show_separators);
+    g_key_file_set_integer (kf, "appearance", "popup_style",        bp->popup_style);
     g_key_file_set_boolean (kf, "appearance", "show_notifications", bp->show_notifications);
     g_key_file_set_boolean (kf, "appearance", "show_unnamed",       bp->show_unnamed);
     g_key_file_set_boolean (kf, "appearance", "hide_when_off",      bp->hide_when_off);
@@ -366,6 +374,7 @@ typedef struct {
     GtkWidget *popup_width_spin;
     GtkWidget *popup_height_spin;
     GtkWidget *separators_check;
+    GtkWidget *style_combo;
     GtkWidget *notifications_check;
     GtkWidget *unnamed_check;
     GtkWidget *hide_check;
@@ -441,6 +450,19 @@ on_separators_toggled (GtkToggleButton *btn, PropsDialog *pd)
     save_config (pd->bp);
     pd->bp->popup->show_separators = pd->bp->show_separators;
     pd->bp->popup->ui_built = FALSE;   /* forzar reconstrucción al reabrir */
+}
+
+static void
+on_popup_style_changed (GtkComboBox *combo, PropsDialog *pd)
+{
+    gint idx = gtk_combo_box_get_active (combo);
+    if (idx < BT_POPUP_STYLE_AUTO || idx > BT_POPUP_STYLE_ATTACHED)
+        return;
+    pd->bp->popup_style = idx;
+    save_config (pd->bp);
+    /* Se aplica en la próxima apertura: cambiar la transparencia exige la
+     * ventana cerrada. */
+    pd->bp->popup->style = idx;
 }
 
 #ifdef HAVE_LIBNOTIFY
@@ -614,6 +636,10 @@ on_configure_plugin (XfcePanelPlugin *plugin, BtPlugin *bp)
     PropsDialog *pd = g_new0 (PropsDialog, 1);
     pd->bp = bp;
 
+    /* Sin padre A PROPÓSITO. En Wayland el panel es una capa (layer-shell),
+     * no una ventana común: con él como padre, GTK ubica mal las ventanitas
+     * del diálogo (una lista desplegable salía en una esquina de la
+     * pantalla, visto en otro plugin). No poner el panel como padre. */
     GtkWidget *dialog = gtk_dialog_new_with_buttons (
         _("Properties — Bluetooth"), NULL,
         GTK_DIALOG_DESTROY_WITH_PARENT,
@@ -685,6 +711,24 @@ on_configure_plugin (XfcePanelPlugin *plugin, BtPlugin *bp)
     gtk_spin_button_set_value (GTK_SPIN_BUTTON (pd->popup_height_spin), bp->popup_height);
     gtk_grid_attach (GTK_GRID (grid), ph_label,              0, row, 1, 1);
     gtk_grid_attach (GTK_GRID (grid), pd->popup_height_spin, 1, row++, 1, 1);
+
+    GtkWidget *style_label = gtk_label_new (_("Popup style:"));
+    gtk_label_set_xalign (GTK_LABEL (style_label), 0.0);
+    gtk_widget_set_margin_start (style_label, 12);
+    pd->style_combo = gtk_combo_box_text_new ();
+    /* El orden tiene que coincidir con BtPopupStyle. */
+    gtk_combo_box_text_append_text (GTK_COMBO_BOX_TEXT (pd->style_combo),
+                                    _("Automatic"));
+    gtk_combo_box_text_append_text (GTK_COMBO_BOX_TEXT (pd->style_combo),
+                                    _("Floating"));
+    gtk_combo_box_text_append_text (GTK_COMBO_BOX_TEXT (pd->style_combo),
+                                    _("Attached to the panel"));
+    gtk_combo_box_set_active (GTK_COMBO_BOX (pd->style_combo), bp->popup_style);
+    gtk_widget_set_tooltip_text (pd->style_combo,
+        _("Automatic: floating with rounded corners when the theme rounds "
+          "its popovers; otherwise attached to the panel."));
+    gtk_grid_attach (GTK_GRID (grid), style_label,     0, row, 1, 1);
+    gtk_grid_attach (GTK_GRID (grid), pd->style_combo, 1, row++, 1, 1);
 
     GtkWidget *sep3 = gtk_separator_new (GTK_ORIENTATION_HORIZONTAL);
     gtk_widget_set_margin_top (sep3, 4);
@@ -837,6 +881,7 @@ on_configure_plugin (XfcePanelPlugin *plugin, BtPlugin *bp)
     g_signal_connect (pd->popup_width_spin,    "value-changed", G_CALLBACK (on_popup_width_changed), pd);
     g_signal_connect (pd->popup_height_spin,   "value-changed", G_CALLBACK (on_popup_height_changed),pd);
     g_signal_connect (pd->separators_check,    "toggled",       G_CALLBACK (on_separators_toggled),  pd);
+    g_signal_connect (pd->style_combo,         "changed",       G_CALLBACK (on_popup_style_changed), pd);
     g_signal_connect (pd->unnamed_check,       "toggled",       G_CALLBACK (on_unnamed_toggled),     pd);
     g_signal_connect (pd->hide_check,          "toggled",       G_CALLBACK (on_hide_toggled),        pd);
 #ifdef HAVE_LIBNOTIFY
@@ -1105,6 +1150,7 @@ bt_plugin_new (XfcePanelPlugin *plugin)
     bp->popup->plugin_ref      = bp;
     bp->popup->show_separators = bp->show_separators;
     bp->popup->show_unnamed    = bp->show_unnamed;
+    bp->popup->style           = bp->popup_style;
 
     /* El agente de pareo: registrado a nivel de plugin, para que atienda los
      * pedidos aunque el popup esté cerrado. Se registra de forma optimista:

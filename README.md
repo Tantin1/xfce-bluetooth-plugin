@@ -102,10 +102,14 @@ También se puede compilar con CMake; está explicado en
   systemctl status bluetooth
   ```
 
+  En distribuciones sin systemd, con la herramienta de servicios que traiga
+  (por ejemplo `service bluetooth status`).
+
 - **El servicio de transferencia de archivos**, solo si querés enviar o
   recibir archivos. Viene en un paquete aparte: `bluez-obex` en Arch,
-  `bluez-obexd` en Debian. En algunas distribuciones, además, hay que
-  encenderlo:
+  `bluez-obexd` en Debian. En algunas distribuciones con systemd, además,
+  hay que encenderlo (sin systemd no hace falta: lo arranca el sistema solo
+  cuando se lo necesita):
 
   ```bash
   systemctl --user enable --now obex.service
@@ -134,7 +138,8 @@ Descargas).
 del servicio de transferencia: algunas versiones se niegan a escribir cuando
 la carpeta pasa por un enlace simbólico, y otras rechazan todo por una falla
 propia. En esa misma ventana aparece el botón **«Arreglar
-automáticamente»**, que lo resuelve sin pedir contraseña.
+automáticamente»**, que lo resuelve sin pedir contraseña, con systemd o sin
+él.
 
 **Solo un programa puede recibir archivos a la vez.** Si Blueman está
 abierto, el complemento te lo avisa y vuelve a intentar solo cada minuto:
