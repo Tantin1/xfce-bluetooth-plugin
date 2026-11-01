@@ -65,6 +65,16 @@ o están conectados.
 resto, porque el servicio corre como el usuario. Preguntar si está disponible
 no lo enciende; solo se enciende cuando el usuario pide transferir.
 
+**Sin systemd, la recepción anda igual.** Al demonio de transferencia lo
+arranca el bus de sesión con la línea `Exec=` de su archivo de activación;
+systemd solo interviene si existe (`/run/systemd/system`, la misma prueba
+que usa la biblioteca de systemd). Lo que cambia es el arreglo de enlaces
+simbólicos: con systemd es una sustitución de `obex.service`; sin systemd, un
+archivo de activación del usuario en `~/.local/share/dbus-1/services/`, que
+el bus prefiere al del sistema, con `--symlinks` agregado. Después se detiene
+el demonio viejo (comprobando que sea obexd) y se arranca el nuevo por el
+bus. Los mensajes de ayuda también cambian según haya o no systemd.
+
 **El nombre del archivo entrante se poda a su última parte.** Lo elige el
 aparato que manda; sin la poda, uno hostil podría escribir fuera de la
 carpeta elegida. No sacar.
@@ -120,6 +130,32 @@ En X11 esa función no hace nada.
 `G_MESSAGES_DEBUG=xfce-bluetooth-plugin` muestra qué pasa con la ventana
 (tipo de panel, acaparamiento, cada clic adentro o afuera, cierres del
 compositor). Silencioso por omisión.
+
+## Presentación de la ventana emergente
+
+**Aspecto del tema.** Todo el contenido va adentro de una caja con nombre
+de componente «popover» (`BtPopupFrame`): el tema le pone fondo, borde,
+esquinas y colores de letra como a sus popovers (los temas escriben sus
+reglas para el componente, no para una clase). Si hay compositor (siempre en
+Wayland; en X11 cuando está activo el de xfwm4 u otro), la ventana tiene
+transparencia y se ven las esquinas redondeadas; sin compositor, la caja
+queda con esquinas rectas. Si el compositor se prende o se apaga con la
+ventana abierta, el cambio se aplica en la próxima apertura. La ventana mide
+lo configurado en los dos modos. No pintar solo el fondo del popover detrás
+de un contenido común: con temas como Numix la letra queda ilegible.
+
+**Estilo de la ventana** (Propiedades, clave `popup_style`): Automático
+flota y redondea solo si hay compositor y el tema les pone radio a sus
+popovers; Flotante siempre queda despegada 6 px; Pegada al panel no usa
+transparencia, deja las esquinas rectas y pega la ventana al panel y al
+borde. El diálogo de Propiedades se crea sin padre a propósito: en Wayland,
+con el panel como padre, las listas desplegables salen fuera de lugar.
+
+**Regla «imán».** A lo largo del panel: centrada sobre el botón; si no
+entra, se corre; si contra un borde queda un hueco menor que media ventana,
+se pega a ese borde. Vale para X11 y Wayland, con paneles horizontales y
+verticales (`place_along_panel`). En Wayland el área es el propio panel,
+porque el programa no sabe dónde está en la pantalla.
 
 ## Compilar con CMake
 

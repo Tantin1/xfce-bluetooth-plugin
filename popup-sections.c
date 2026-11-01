@@ -182,6 +182,23 @@ make_adapter_section (BtPopup *popup, BtAdapter *ad, gboolean show_header)
                                                   ad_switch);
 
         gtk_box_pack_start (GTK_BOX (section), header_row, FALSE, FALSE, 0);
+
+        /* Línea debajo del encabezado (solo con dos o más adaptadores, que es
+         * cuando hay encabezado). Sin ella, el primer aparato quedaba sin la
+         * línea de arriba que tienen los demás y parecía parte del
+         * encabezado o un panel desplegado.
+         *
+         * NO es un GtkSeparator a propósito: el refresco por diferencia toma
+         * cada GtkSeparator como "la línea de una fila" y, con uno suelto acá,
+         * terminaba acomodando los aparatos por encima de él. Una caja con
+         * clase propia cuenta como parte fija del encabezado. */
+        if (popup->show_separators) {
+            GtkWidget *header_sep = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 0);
+            gtk_widget_set_size_request (header_sep, -1, 1);
+            gtk_style_context_add_class (
+                gtk_widget_get_style_context (header_sep), "bt-header-sep");
+            gtk_box_pack_start (GTK_BOX (section), header_sep, FALSE, FALSE, 0);
+        }
     }
 
     gint n_rows = 0;
@@ -194,12 +211,15 @@ make_adapter_section (BtPopup *popup, BtAdapter *ad, gboolean show_header)
             if (!device_is_listable (popup, dev))
                 continue;
 
+            /* Cada fila lleva su línea DEBAJO: la primera no suma otra a la
+             * línea gruesa del comienzo de la sección, y la última queda
+             * cerrada (sin ella parecía un panel desplegado). */
+            GtkWidget *r = make_device_row (dev, popup);
+            gtk_box_pack_start (GTK_BOX (section), r, FALSE, FALSE, 0);
             if (popup->show_separators) {
                 GtkWidget *sep = gtk_separator_new (GTK_ORIENTATION_HORIZONTAL);
                 gtk_box_pack_start (GTK_BOX (section), sep, FALSE, FALSE, 0);
             }
-            GtkWidget *r = make_device_row (dev, popup);
-            gtk_box_pack_start (GTK_BOX (section), r, FALSE, FALSE, 0);
             n_rows++;
         }
         bt_device_list_free (devs);
@@ -313,7 +333,7 @@ diff_refresh_one_section (BtPopup *popup, GtkWidget *section, BtAdapter *ad)
     }
 
     /* Inventario de filas existentes, clave = dirección MAC. El separador
-     * propio de cada fila (el GtkSeparator inmediatamente anterior) se anota
+     * propio de cada fila (el GtkSeparator inmediatamente POSTERIOR) se anota
      * en la fila. También se cuenta el prefijo de widgets fijos (separador de
      * módulo, encabezado) que precede a la zona de filas. */
     GHashTable *existing = g_hash_table_new_full (g_str_hash, g_str_equal,
@@ -321,23 +341,26 @@ diff_refresh_one_section (BtPopup *popup, GtkWidget *section, BtAdapter *ad)
     GList     *kids = gtk_container_get_children (GTK_CONTAINER (section));
     gint       prefix = 0;
     gboolean   in_rows = FALSE;
-    GtkWidget *pending_sep = NULL;
+    GtkWidget *last_row = NULL;
 
     for (GList *k = kids; k; k = k->next) {
         GtkWidget *w = k->data;
         if (GTK_IS_SEPARATOR (w)) {
             in_rows = TRUE;
-            pending_sep = w;
+            if (last_row)
+                g_object_set_data (G_OBJECT (last_row), "own-separator", w);
+            last_row = NULL;
             continue;
         }
         if (GTK_IS_EVENT_BOX (w)) {
             in_rows = TRUE;
             const gchar *addr = g_object_get_data (G_OBJECT (w), "address");
+            last_row = NULL;
             if (addr) {
-                g_object_set_data (G_OBJECT (w), "own-separator", pending_sep);
+                g_object_set_data (G_OBJECT (w), "own-separator", NULL);
                 g_hash_table_replace (existing, g_strdup (addr), w);
+                last_row = w;
             }
-            pending_sep = NULL;
             continue;
         }
         if (!in_rows)
@@ -387,11 +410,12 @@ diff_refresh_one_section (BtPopup *popup, GtkWidget *section, BtAdapter *ad)
             gtk_box_pack_start (GTK_BOX (section), sep_w, FALSE, FALSE, 0);
             gtk_widget_show (sep_w);
         }
+        /* Primero la fila y después su línea (va debajo). */
+        gtk_box_reorder_child (GTK_BOX (section), row_w, pos++);
         if (sep_w) {
             g_object_set_data (G_OBJECT (row_w), "own-separator", sep_w);
             gtk_box_reorder_child (GTK_BOX (section), sep_w, pos++);
         }
-        gtk_box_reorder_child (GTK_BOX (section), row_w, pos++);
 
         n_rows++;
         g_free (fp_new);

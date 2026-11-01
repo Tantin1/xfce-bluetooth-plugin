@@ -820,3 +820,37 @@ msgstr ""
 #: bt-obex-agent.c:1443
 msgid "Waiting for the file transfer service…"
 msgstr "Oczekiwanie na usługę przesyłania plików…"
+
+#: bt-obex.c:302
+#, c-format
+msgid "The session bus cannot start it. Log out and back in; if it persists, reinstall the package \"%s\"."
+msgstr "Magistrala sesji nie może jej uruchomić. Wyloguj się i zaloguj ponownie; jeśli problem nie ustąpi, zainstaluj ponownie pakiet „%s”."
+
+#: bt-obex.c:311
+#, c-format
+msgid "Install the package \"%s\"."
+msgstr "Zainstaluj pakiet „%s”."
+
+#: bt-obex.c:588
+msgid "The fix was saved, but the running service could not be restarted. Log out and back in to apply it."
+msgstr "Poprawka została zapisana, ale nie można było ponownie uruchomić działającej usługi. Wyloguj się i zaloguj ponownie, aby ją zastosować."
+
+#: plugin.c:715
+msgid "Popup style:"
+msgstr "Styl okna:"
+
+#: plugin.c:721
+msgid "Automatic"
+msgstr "Automatyczny"
+
+#: plugin.c:723
+msgid "Floating"
+msgstr "Pływający"
+
+#: plugin.c:725
+msgid "Attached to the panel"
+msgstr "Przyklejony do panelu"
+
+#: plugin.c:728
+msgid "Automatic: floating with rounded corners when the theme rounds its popovers; otherwise attached to the panel."
+msgstr "Automatyczny: pływający z zaokrąglonymi rogami, jeśli motyw zaokrągla swoje okna podręczne; w przeciwnym razie przyklejony do panelu."

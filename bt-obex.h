@@ -83,7 +83,8 @@ const gchar *bt_obex_package_name (void);
 gchar *bt_obex_find_symlink_in_path (const gchar *folder);
 
 /* TRUE si ya se instaló el archivo de sustitución que agrega --symlinks al
- * arranque del servicio. Es una lectura barata del archivo: no confirma que
+ * arranque del servicio (el de systemd, o sin systemd el archivo de
+ * activación del usuario). Es una lectura barata del archivo: no confirma que
  * el servicio ya esté CORRIENDO con esa opción, solo que el arreglo ya se
  * aplicó (para eso está bt_obex_install_symlinks_override, que además
  * reinicia el servicio). Sirve para no repetir el aviso una vez resuelto. */
@@ -93,6 +94,10 @@ gboolean bt_obex_symlinks_override_installed (void);
  * --symlinks al arranque de obexd, y reinicia el servicio para que tome
  * efecto ya mismo. No hace falta contraseña ni privilegios: obex.service es
  * un servicio de USUARIO, no del sistema.
+ *
+ * Sin systemd hace lo equivalente con el bus de sesión: escribe un archivo
+ * de activación del usuario (~/.local/share/dbus-1/services) que arranca
+ * obexd con --symlinks, detiene el que esté corriendo y arranca el nuevo.
  *
  * Devuelve FALSE y llena error si algún paso falla (no se pudo escribir el
  * archivo, o systemctl devolvió error). Si falla en el reinicio, el archivo

@@ -816,3 +816,37 @@ msgstr ""
 #: bt-obex-agent.c:1443
 msgid "Waiting for the file transfer service…"
 msgstr "ファイル転送サービスを待っています…"
+
+#: bt-obex.c:302
+#, c-format
+msgid "The session bus cannot start it. Log out and back in; if it persists, reinstall the package \"%s\"."
+msgstr "セッションバスがサービスを起動できません。ログアウトして再度ログインしてください。それでも解決しない場合は、パッケージ「%s」を再インストールしてください。"
+
+#: bt-obex.c:311
+#, c-format
+msgid "Install the package \"%s\"."
+msgstr "パッケージ「%s」をインストールしてください。"
+
+#: bt-obex.c:588
+msgid "The fix was saved, but the running service could not be restarted. Log out and back in to apply it."
+msgstr "修正は保存されましたが、実行中のサービスを再起動できませんでした。適用するには、ログアウトして再度ログインしてください。"
+
+#: plugin.c:715
+msgid "Popup style:"
+msgstr "ウィンドウのスタイル:"
+
+#: plugin.c:721
+msgid "Automatic"
+msgstr "自動"
+
+#: plugin.c:723
+msgid "Floating"
+msgstr "フローティング"
+
+#: plugin.c:725
+msgid "Attached to the panel"
+msgstr "パネルに接続"
+
+#: plugin.c:728
+msgid "Automatic: floating with rounded corners when the theme rounds its popovers; otherwise attached to the panel."
+msgstr "自動: テーマがポップオーバーの角を丸める場合は角丸のフローティング表示、それ以外はパネルに接続して表示します。"

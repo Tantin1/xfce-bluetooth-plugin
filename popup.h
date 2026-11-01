@@ -11,6 +11,14 @@
  * Wayland viven en el mismo proceso. */
 #define WL_DEBUG(...) g_log ("xfce-bluetooth-plugin", G_LOG_LEVEL_DEBUG, __VA_ARGS__)
 
+/* Estilo de la ventana emergente (opción de Propiedades). Los números se
+ * guardan en la configuración: no reordenar. */
+typedef enum {
+    BT_POPUP_STYLE_AUTO     = 0,  /* flotante y redondeada si el tema redondea */
+    BT_POPUP_STYLE_FLOATING = 1,  /* siempre despegada, esquinas del tema */
+    BT_POPUP_STYLE_ATTACHED = 2   /* esquinas rectas, pegada al panel */
+} BtPopupStyle;
+
 typedef struct {
     GtkWidget *window;
     GtkWidget *top_box;
@@ -71,6 +79,18 @@ typedef struct {
      * puede disparar "grab-broken-event" en el acto, y ese manejador vuelve
      * a llamar a popup_hide: la marca corta esa vuelta. */
     gboolean   hiding;
+
+    /* Aspecto del tema (ver popup_update_rounding en popup.c). frame: caja
+     * con nombre de componente "popover" que contiene todo; el tema le pone
+     * fondo, borde, esquinas y colores de letra. rounded: TRUE si la ventana
+     * tiene transparencia y se ven las esquinas redondeadas. outer_box: la
+     * caja de adentro. composited_handler: aviso de que el compositor se
+     * prendió o se apagó. */
+    GtkWidget *frame;
+    GtkWidget *outer_box;
+    gboolean   rounded;
+    gulong     composited_handler;
+    gint       style;              /* BtPopupStyle, lo fija el plugin */
 } BtPopup;
 
 /* Ícono de un dispositivo, con cadena de respaldo hasta el genérico. */

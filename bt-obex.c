@@ -34,6 +34,7 @@
 #include <glib/gstdio.h>
 #include <string.h>
 #include <errno.h>
+#include <signal.h>
 #include <sys/stat.h>
 
 /* Archivo que declara el servicio como activable por el bus. Su presencia
@@ -102,6 +103,23 @@ obexd_binary_present (void)
 
     g_free (path);
     return present;
+}
+
+/* ============================================================
+ * ¿Hay systemd?
+ *
+ * No todas las distribuciones lo usan (Devuan, Artix, antiX y otras). La
+ * recepción en sí no lo necesita: al demonio lo arranca el bus de sesión
+ * con la línea "Exec=" de su archivo de activación. Lo que sí cambia sin
+ * systemd es CÓMO se le agrega --symlinks y qué se le dice al usuario.
+ * ============================================================ */
+
+/* Misma prueba que sd_booted() de la biblioteca de systemd: esa carpeta
+ * existe solo si systemd es el gestor del sistema. */
+static gboolean
+system_has_systemd (void)
+{
+    return g_file_test ("/run/systemd/system", G_FILE_TEST_IS_DIR);
 }
 
 /* ============================================================
@@ -277,10 +295,21 @@ bt_obex_state_hint (BtObexState state)
         return NULL;
 
     case BT_OBEX_NOT_ENABLED:
+        /* Sin systemd no hay nada que "habilitar": si el bus no sabe
+         * arrancarlo, le falta (o no leyó) el archivo de activación. */
+        if (!system_has_systemd ())
+            return g_strdup_printf (
+                _("The session bus cannot start it. Log out and back in; "
+                  "if it persists, reinstall the package \"%s\"."),
+                bt_obex_package_name ());
         return g_strdup (
             _("Enable it with:\nsystemctl --user enable --now obex.service"));
 
     case BT_OBEX_NOT_INSTALLED:
+        /* Sin systemd, instalar alcanza: el bus lo arranca solo. */
+        if (!system_has_systemd ())
+            return g_strdup_printf (_("Install the package \"%s\"."),
+                                    bt_obex_package_name ());
         return g_strdup_printf (
             _("Install the package \"%s\", then run:\n"
               "systemctl --user enable --now obex.service"),
@@ -378,21 +407,187 @@ bt_obex_find_symlink_in_path (const gchar *folder)
     return found;
 }
 
-gboolean
-bt_obex_symlinks_override_installed (void)
+/* Archivo de activación del USUARIO para el bus de sesión. El bus le da
+ * prioridad sobre el del sistema (busca primero en ~/.local/share), así que
+ * es el equivalente sin systemd de la sustitución de obex.service. */
+static gchar *
+user_activation_file (void)
 {
-    gchar    *path    = g_build_filename (g_get_user_config_dir (),
-                                          "systemd", "user", "obex.service.d",
-                                          "10-symlinks.conf", NULL);
+    return g_build_filename (g_get_user_data_dir (), "dbus-1", "services",
+                             "org.bluez.obex.service", NULL);
+}
+
+static gboolean
+file_mentions_symlinks (const gchar *path)
+{
     gchar    *content = NULL;
     gboolean  found   = FALSE;
 
     if (g_file_get_contents (path, &content, NULL, NULL))
         found = (strstr (content, "--symlinks") != NULL);
-
     g_free (content);
+    return found;
+}
+
+gboolean
+bt_obex_symlinks_override_installed (void)
+{
+    gchar *path = system_has_systemd ()
+        ? g_build_filename (g_get_user_config_dir (), "systemd", "user",
+                            "obex.service.d", "10-symlinks.conf", NULL)
+        : user_activation_file ();
+    gboolean found = file_mentions_symlinks (path);
+
     g_free (path);
     return found;
+}
+
+/* Ruta del ejecutable según el archivo de activación del SISTEMA (su línea
+ * "Exec=", sin argumentos). NULL si no se encontró o si apunta a algo que no
+ * es obexd: algunas distribuciones con systemd ponen /bin/false y dejan todo
+ * en manos de systemd. */
+static gchar *
+find_original_dbus_exec (void)
+{
+    const gchar *const *dirs = g_get_system_data_dirs ();
+
+    for (guint d = 0; dirs[d] != NULL; d++) {
+        gchar *file    = g_build_filename (dirs[d], "dbus-1", "services",
+                                           "org.bluez.obex.service", NULL);
+        gchar *content = NULL;
+        gchar *found   = NULL;
+
+        if (g_file_get_contents (file, &content, NULL, NULL)) {
+            gchar **lines = g_strsplit (content, "\n", -1);
+            for (guint i = 0; lines[i] != NULL && found == NULL; i++) {
+                gchar *line = g_strstrip (lines[i]);
+                if (!g_str_has_prefix (line, "Exec="))
+                    continue;
+                gchar **argv = NULL;
+                if (g_shell_parse_argv (line + strlen ("Exec="), NULL, &argv,
+                                        NULL) &&
+                    g_str_has_suffix (argv[0], "obexd") &&
+                    g_file_test (argv[0], G_FILE_TEST_IS_EXECUTABLE))
+                    found = g_strdup (argv[0]);
+                g_strfreev (argv);
+            }
+            g_strfreev (lines);
+        }
+        g_free (content);
+        g_free (file);
+        if (found != NULL)
+            return found;
+    }
+    return NULL;
+}
+
+/* Detiene el obexd que está corriendo, si hay uno. Se le pregunta al bus el
+ * número de proceso del dueño del nombre, y se comprueba que de verdad sea
+ * obexd antes de mandarle la señal de terminar: el número viene de afuera.
+ * Después se espera (hasta 3 segundos) a que suelte el nombre. TRUE si
+ * quedó detenido, o si no había ninguno corriendo. */
+static gboolean
+stop_running_obexd (GDBusConnection *bus)
+{
+    if (!bus_name_has_owner (bus, BT_OBEX_BUS_NAME))
+        return TRUE;
+
+    GVariant *ret = g_dbus_connection_call_sync (
+        bus, "org.freedesktop.DBus", "/org/freedesktop/DBus",
+        "org.freedesktop.DBus", "GetConnectionUnixProcessID",
+        g_variant_new ("(s)", BT_OBEX_BUS_NAME), G_VARIANT_TYPE ("(u)"),
+        G_DBUS_CALL_FLAGS_NO_AUTO_START, 2000, NULL, NULL);
+    if (ret == NULL)
+        return FALSE;
+
+    guint32 pid = 0;
+    g_variant_get (ret, "(u)", &pid);
+    g_variant_unref (ret);
+    if (pid == 0)
+        return FALSE;
+
+    gchar *comm_path = g_strdup_printf ("/proc/%u/comm", pid);
+    gchar *comm      = NULL;
+    gboolean is_obexd = g_file_get_contents (comm_path, &comm, NULL, NULL) &&
+                        g_str_has_prefix (comm, "obexd");
+    g_free (comm);
+    g_free (comm_path);
+    if (!is_obexd || kill ((pid_t) pid, SIGTERM) != 0)
+        return FALSE;
+
+    for (guint i = 0; i < 30; i++) {
+        if (!bus_name_has_owner (bus, BT_OBEX_BUS_NAME))
+            return TRUE;
+        g_usleep (100 * 1000);
+    }
+    return FALSE;
+}
+
+/* El arreglo sin systemd: archivo de activación del usuario con --symlinks,
+ * el bus relee su configuración, se detiene el demonio viejo y se arranca
+ * el nuevo a través del bus. El agente de recepción se vuelve a registrar
+ * solo cuando el nombre reaparece (ya vigila eso). */
+static gboolean
+install_symlinks_override_dbus (GError **error)
+{
+    gchar *path = user_activation_file ();
+    gchar *dir  = g_path_get_dirname (path);
+
+    if (g_mkdir_with_parents (dir, 0755) != 0) {
+        g_set_error (error, G_FILE_ERROR, g_file_error_from_errno (errno),
+                    _("Could not create %s: %s"), dir, g_strerror (errno));
+        g_free (dir);
+        g_free (path);
+        return FALSE;
+    }
+    g_free (dir);
+
+    gchar *bin = find_original_dbus_exec ();
+    if (bin == NULL)
+        bin = obexd_binary_find ();
+    if (bin == NULL)
+        bin = g_strdup ("/usr/lib/bluetooth/obexd");
+
+    gchar *content = g_strdup_printf (
+        "[D-BUS Service]\nName=" BT_OBEX_BUS_NAME "\nExec=%s --symlinks\n",
+        bin);
+    g_free (bin);
+    gboolean wrote = g_file_set_contents (path, content, -1, error);
+    g_free (content);
+    g_free (path);
+    if (!wrote)
+        return FALSE;
+
+    GDBusConnection *bus = g_bus_get_sync (G_BUS_TYPE_SESSION, NULL, error);
+    if (bus == NULL)
+        return FALSE;
+
+    /* Que el bus vea el archivo nuevo ya (normalmente lo nota solo). */
+    GVariant *r = g_dbus_connection_call_sync (
+        bus, "org.freedesktop.DBus", "/org/freedesktop/DBus",
+        "org.freedesktop.DBus", "ReloadConfig", NULL, NULL,
+        G_DBUS_CALL_FLAGS_NONE, 5000, NULL, NULL);
+    if (r != NULL)
+        g_variant_unref (r);
+
+    gboolean ok = stop_running_obexd (bus);
+    if (ok) {
+        r = g_dbus_connection_call_sync (
+            bus, "org.freedesktop.DBus", "/org/freedesktop/DBus",
+            "org.freedesktop.DBus", "StartServiceByName",
+            g_variant_new ("(su)", BT_OBEX_BUS_NAME, 0),
+            G_VARIANT_TYPE ("(u)"), G_DBUS_CALL_FLAGS_NONE, 10000, NULL, NULL);
+        ok = (r != NULL);
+        if (r != NULL)
+            g_variant_unref (r);
+    }
+    g_object_unref (bus);
+
+    if (!ok)
+        g_set_error_literal (error, G_IO_ERROR, G_IO_ERROR_FAILED,
+            _("The fix was saved, but the running service could not be "
+              "restarted. Log out and back in to apply it."));
+    return ok;
 }
 
 /* Corre "systemctl --user <argv...>" sin pasar por ninguna shell (así da lo
@@ -415,6 +610,9 @@ run_systemctl_user (const gchar *const *argv, GError **error)
 gboolean
 bt_obex_install_symlinks_override (GError **error)
 {
+    if (!system_has_systemd ())
+        return install_symlinks_override_dbus (error);
+
     gchar *dir = g_build_filename (g_get_user_config_dir (),
                                    "systemd", "user", "obex.service.d", NULL);
 
