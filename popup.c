@@ -1537,15 +1537,8 @@ popup_create (XfcePanelPlugin *plugin, GtkWidget *button)
                         FALSE, FALSE, 0);
     gtk_box_pack_end (GTK_BOX (outer_box), disc_row, FALSE, FALSE, 0);
 
-    /* Separador entre la lista y la zona fija. Va DESPUÉS de lo demás porque
-     * pack_end apila de abajo hacia arriba: agregado primero (como estaba),
-     * quedaba debajo de "Configuración avanzada", sin separar nada, y con la
-     * ventana redondeada se veía pasar por encima de la curva. */
-    GtkWidget *bottom_sep = gtk_separator_new (GTK_ORIENTATION_HORIZONTAL);
-    /* Aire arriba: con la lista llena, la línea del último aparato quedaba
-     * pegada a esta y se veía doble. */
-    gtk_widget_set_margin_top (bottom_sep, 4);
-    gtk_box_pack_end (GTK_BOX (outer_box), bottom_sep, FALSE, FALSE, 0);
+    /* Sin línea entre la lista y la zona fija, a propósito (0051): la línea
+     * del último aparato ya la separa, y con las dos juntas se veía doble. */
 
     /* La visibilidad ya no es permanente: se apaga sola al vencer el plazo
      * (ver BT_DISCOVERABLE_TIMEOUT_S en bt-dbus.h). Decirlo acá evita que el
