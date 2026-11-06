@@ -86,11 +86,30 @@ typedef struct {
      * tiene transparencia y se ven las esquinas redondeadas. outer_box: la
      * caja de adentro. composited_handler: aviso de que el compositor se
      * prendió o se apagó. */
-    GtkWidget *frame;
+    GtkWidget *frame;              /* marco visible, componente "menu" */
+    GtkWidget *frame_popover;      /* "popover" que nunca se muestra: radio del tema */
     GtkWidget *outer_box;
     gboolean   rounded;
     gulong     composited_handler;
     gint       style;              /* BtPopupStyle, lo fija el plugin */
+    gboolean   floating;           /* decidido al abrir (popup_update_rounding) */
+
+    /* Zona fija de abajo ("Visible para otros dispositivos" y "Configuración
+     * avanzada"), en su propia caja para poder rearmarla tras un cambio de
+     * tema (ver on_theme_changed en popup.c). */
+    GtkWidget *bottom_box;
+
+    /* X11: tamaño con el que se ubicó la ventana y el plugin, para volver a
+     * ubicarla si al aparecer mide otra cosa (ver on_popup_size_allocate). */
+    gpointer   panel_plugin;
+    gint       placed_w, placed_h;
+
+    /* El tema cambió con la ventana cerrada: rearmar antes de la próxima
+     * apertura. La configuración de GTK vive más que el popup: el aviso se
+     * desconecta al destruirlo. */
+    gboolean     theme_dirty;
+    GtkSettings *theme_settings;
+    gulong       theme_handler;
 } BtPopup;
 
 /* Ícono de un dispositivo, con cadena de respaldo hasta el genérico. */
