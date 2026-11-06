@@ -170,6 +170,13 @@ apply_config (BtPlugin *bp)
         gchar *css;
         gint   ps = xfce_panel_plugin_get_size (plugin);
 
+        /* El tamaño del panel es el de TODO su alto (o ancho, si es
+         * vertical), no el de una fila. Con varias filas, un botón cuadrado
+         * del alto entero salía del doble de ancho y estiraba la fila: el
+         * lado es el tamaño del panel repartido entre sus filas. Vale igual
+         * en el modo barra de escritorio, donde las filas son columnas. */
+        ps /= MAX (1, (gint) xfce_panel_plugin_get_nrows (plugin));
+
         if (bp->square_button)
             css = g_strdup_printf (
                 "button{padding:0;margin:0;min-width:%dpx;min-height:%dpx;border:none;}",
@@ -1047,6 +1054,25 @@ on_size_changed (XfcePanelPlugin *plugin, gint size, BtPlugin *bp)
     return TRUE;
 }
 
+/* Cambiar la cantidad de filas o el modo del panel (horizontal, vertical o
+ * barra de escritorio) NO llega como "size-changed": el tamaño del panel no
+ * cambia. Sin estos dos avisos, el botón cuadrado quedaba con el lado viejo
+ * y el no cuadrado con la orientación vieja hasta reiniciar el panel. */
+static void
+on_nrows_changed (XfcePanelPlugin *plugin, guint rows, BtPlugin *bp)
+{
+    (void) plugin; (void) rows;
+    apply_config (bp);
+}
+
+static void
+on_mode_changed (XfcePanelPlugin *plugin, XfcePanelPluginMode mode,
+                 BtPlugin *bp)
+{
+    (void) plugin; (void) mode;
+    apply_config (bp);
+}
+
 /* ---------- construcción ---------- */
 
 /* ---------- instancia única (ver comentario junto a BT_PLUGIN_SINGLETON_NAME) ---------- */
@@ -1165,7 +1191,9 @@ bt_plugin_new (XfcePanelPlugin *plugin)
      * duplicada. Si resulta serlo, se destruye en on_bt_name_lost. */
     apply_receive_config (bp);
 
-    g_signal_connect (plugin, "size-changed", G_CALLBACK (on_size_changed), bp);
+    g_signal_connect (plugin, "size-changed",  G_CALLBACK (on_size_changed),  bp);
+    g_signal_connect (plugin, "nrows-changed", G_CALLBACK (on_nrows_changed), bp);
+    g_signal_connect (plugin, "mode-changed",  G_CALLBACK (on_mode_changed),  bp);
     g_signal_connect (bp->button, "toggled",  G_CALLBACK (on_button_toggled), bp);
 
     if (bp->conn && !bp->is_duplicate)
