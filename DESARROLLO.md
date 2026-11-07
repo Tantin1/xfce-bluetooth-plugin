@@ -226,7 +226,9 @@ Para publicar una versión nueva: cambiar `version` en `meson.build` (y en
 
 Los archivos de empaquetado:
 
-- `debian/`: `control` (dependencias), `rules`, `copyright`. **`rules`
+- `debian/`: `control` (dependencias), `rules`, `copyright`. En
+  `control` va `libxfce4ui-2-dev` aunque el código no la use: en Debian 13
+  la biblioteca del panel la exige y su paquete de desarrollo no la trae. **`rules`
   fuerza Meson** (`--buildsystem=meson`): como el proyecto también trae
   `CMakeLists.txt`, la herramienta de Debian elegía CMake, que ignora
   `plugin_dir` y dejaba el complemento fuera de la carpeta multiarquitectura
