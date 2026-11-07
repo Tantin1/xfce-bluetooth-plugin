@@ -61,6 +61,9 @@ jobs:
             sufijo: ubuntu24.04
     env:
       DEBIAN_FRONTEND: noninteractive
+      # Sin el paquete aparte de símbolos de depuración (-dbgsym): Debian lo
+      # arma solo y nadie lo necesita.
+      DEB_BUILD_OPTIONS: noautodbgsym
       VERSION: ${{ needs.version.outputs.version }}
       SUFIJO: ${{ matrix.sufijo }}
     steps:
@@ -90,9 +93,13 @@ jobs:
           mv ../*.deb salida/
 
       - name: Comprobar el contenido
+        shell: bash
         run: |
-          dpkg-deb --info salida/*.deb
-          dpkg-deb --contents salida/*.deb
+          # De a uno: dpkg-deb toma el segundo archivo como otra cosa.
+          for d in salida/*.deb; do
+            dpkg-deb --info "$d"
+            dpkg-deb --contents "$d"
+          done
 
       - uses: actions/upload-artifact@v4
         with:
@@ -135,8 +142,10 @@ jobs:
 
       - name: Comprobar el contenido
         run: |
-          pacman -Qip salida/*.pkg.tar.zst
-          pacman -Qlp salida/*.pkg.tar.zst
+          for p in salida/*.pkg.tar.zst; do
+            pacman -Qip "$p"
+            pacman -Qlp "$p"
+          done
 
       - uses: actions/upload-artifact@v4
         with:
