@@ -1,0 +1,28 @@
+# Maintainer: Tantin <juanchiperez97@gmail.com>
+#
+# Sirve igual para compilar a mano desde una versión publicada y para el
+# flujo de GitHub, que deja al lado un comprimido con el mismo nombre: si
+# el archivo ya está, makepkg no lo descarga.
+
+pkgname=xfce-bluetooth-plugin
+pkgver=0.1.0
+pkgrel=1
+pkgdesc="Bluetooth manager plugin for the Xfce panel"
+arch=('x86_64' 'aarch64')
+url="https://github.com/Tantin1/xfce-bluetooth-plugin"
+license=('GPL-2.0-or-later')
+depends=('glib2' 'gtk3' 'xfce4-panel' 'libnotify' 'bluez')
+makedepends=('meson' 'ninja' 'gettext')
+optdepends=('bluez-obex: send and receive files')
+source=("$pkgname-$pkgver.tar.gz::$url/archive/refs/tags/v$pkgver.tar.gz")
+sha256sums=('SKIP')
+
+build() {
+    arch-meson "$pkgname-$pkgver" build \
+        -Dplugin_dir=/usr/lib/xfce4/panel/plugins
+    meson compile -C build
+}
+
+package() {
+    meson install -C build --destdir "$pkgdir"
+}

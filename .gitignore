@@ -17,6 +17,14 @@ compile_commands.json
 # Archivo .desktop generado (se crea a partir del .desktop.in)
 xfce-bluetooth-plugin.desktop
 
+# Restos de armar el paquete de Debian
+debian/.debhelper/
+debian/xfce-bluetooth-plugin/
+debian/files
+debian/*.substvars
+debian/debhelper-build-stamp
+obj-*/
+
 # Parches de trabajo
 *.patch
 

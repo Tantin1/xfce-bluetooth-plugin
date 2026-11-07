@@ -48,6 +48,27 @@ alphabetical order, and nearby unpaired ones last, grouped by distance.
 
 ## Install
 
+### From a package (easiest)
+
+The project's releases page
+(<https://github.com/Tantin1/xfce-bluetooth-plugin/releases>) has ready-made
+packages for Debian 12, Debian 13, Ubuntu 24.04 and Arch. Download the one
+for your system and, from the folder where it was saved:
+
+```bash
+# Debian and Ubuntu (the exact name depends on the version and system)
+sudo apt install ./xfce-bluetooth-plugin_*.deb
+
+# Arch
+sudo pacman -U xfce-bluetooth-plugin-*.pkg.tar.zst
+```
+
+Then run `xfce4-panel -r` and add it as explained at the end of step 2.
+The file transfer service is suggested on install but not required (see
+step 3).
+
+If your system is not listed, or you prefer to build it yourself:
+
 ### 1. Build dependencies
 
 On Debian and derivatives:
@@ -118,7 +139,15 @@ Building with CMake is also possible; see [DESARROLLO.md](DESARROLLO.md)
 
 ## Uninstall
 
-From the same folder where you built it:
+If you installed a package:
+
+```bash
+sudo apt remove xfce-bluetooth-plugin      # Debian and Ubuntu
+sudo pacman -R xfce-bluetooth-plugin       # Arch
+xfce4-panel -r
+```
+
+If you built it, from the same folder where you did:
 
 ```bash
 sudo ninja -C build uninstall

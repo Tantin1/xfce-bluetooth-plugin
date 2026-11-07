@@ -1,0 +1,164 @@
+# Arma los paquetes para Debian 12, Debian 13, Ubuntu 24.04 y Arch.
+#
+# - Al subir una etiqueta de versión (por ejemplo v0.1.1): arma los cuatro y
+#   los adjunta a una publicación de versión («Release») de GitHub. La
+#   etiqueta tiene que coincidir con la versión de meson.build.
+# - A mano, desde la pestaña «Actions» → «Paquetes» → «Run workflow»: arma
+#   los cuatro y los deja para descargar en la página de esa ejecución, sin
+#   publicar nada.
+
+name: Paquetes
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  version:
+    name: Versión
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.leer.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Leer la versión de meson.build
+        id: leer
+        shell: bash
+        run: |
+          v=$(sed -n "s/^[[:space:]]*version[[:space:]]*:[[:space:]]*'\([^']*\)'.*/\1/p" meson.build | head -n 1)
+          if [ -z "$v" ]; then
+            echo "::error::No se encontró la versión en meson.build"
+            exit 1
+          fi
+          if [ "$GITHUB_REF_TYPE" = "tag" ] && [ "$GITHUB_REF_NAME" != "v$v" ]; then
+            echo "::error::La etiqueta $GITHUB_REF_NAME no coincide con la versión de meson.build ($v). Debería ser v$v."
+            exit 1
+          fi
+          echo "version=$v" >> "$GITHUB_OUTPUT"
+
+  deb:
+    name: ${{ matrix.nombre }}
+    needs: version
+    runs-on: ubuntu-latest
+    container: ${{ matrix.imagen }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - nombre: Debian 12
+            imagen: debian:12
+            sufijo: deb12
+          - nombre: Debian 13
+            imagen: debian:13
+            sufijo: deb13
+          - nombre: Ubuntu 24.04
+            imagen: ubuntu:24.04
+            sufijo: ubuntu24.04
+    env:
+      DEBIAN_FRONTEND: noninteractive
+      VERSION: ${{ needs.version.outputs.version }}
+      SUFIJO: ${{ matrix.sufijo }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Instalar lo necesario para compilar
+        run: |
+          apt-get update
+          apt-get install -y --no-install-recommends build-essential
+          apt-get build-dep -y ./
+
+      - name: Armar el paquete
+        shell: bash
+        run: |
+          # Versión del paquete: la del programa, más -1 y el sistema, para
+          # que los tres .deb tengan nombres distintos.
+          {
+            echo "xfce-bluetooth-plugin ($VERSION-1~$SUFIJO) unstable; urgency=medium"
+            echo
+            echo "  * Paquete armado por GitHub Actions."
+            echo
+            echo " -- Tantin <juanchiperez97@gmail.com>  $(date -R)"
+          } > debian/changelog
+          chmod +x debian/rules
+          dpkg-buildpackage -us -uc -b
+          mkdir -p salida
+          mv ../*.deb salida/
+
+      - name: Comprobar el contenido
+        run: |
+          dpkg-deb --info salida/*.deb
+          dpkg-deb --contents salida/*.deb
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: paquete-${{ matrix.sufijo }}
+          path: salida/*.deb
+          if-no-files-found: error
+
+  arch:
+    name: Arch
+    needs: version
+    runs-on: ubuntu-latest
+    container: archlinux:latest
+    env:
+      VERSION: ${{ needs.version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Instalar lo necesario para compilar
+        run: |
+          pacman -Syu --noconfirm --needed base-devel meson ninja gettext \
+            glib2 gtk3 xfce4-panel libnotify bluez
+
+      - name: Armar el paquete
+        shell: bash
+        run: |
+          # makepkg no corre como administrador: se usa un usuario común.
+          useradd -m armador
+          mkdir -p /tmp/arch
+          cp packaging/arch/PKGBUILD /tmp/arch/
+          sed -i "s/^pkgver=.*/pkgver=$VERSION/" /tmp/arch/PKGBUILD
+          # El código de este mismo envío, con el nombre que espera el
+          # PKGBUILD: así makepkg no lo descarga de GitHub.
+          tar czf "/tmp/arch/xfce-bluetooth-plugin-$VERSION.tar.gz" \
+            --exclude=./.git \
+            --transform "s,^\.,xfce-bluetooth-plugin-$VERSION," .
+          chown -R armador /tmp/arch
+          su armador -c "cd /tmp/arch && makepkg --noconfirm"
+          mkdir -p salida
+          mv /tmp/arch/*.pkg.tar.zst salida/
+
+      - name: Comprobar el contenido
+        run: |
+          pacman -Qip salida/*.pkg.tar.zst
+          pacman -Qlp salida/*.pkg.tar.zst
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: paquete-arch
+          path: salida/*.pkg.tar.zst
+          if-no-files-found: error
+
+  publicar:
+    name: Publicar la versión
+    if: github.ref_type == 'tag'
+    needs: [deb, arch]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: paquete-*
+          path: paquetes
+          merge-multiple: true
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: paquetes/*
+          generate_release_notes: true
