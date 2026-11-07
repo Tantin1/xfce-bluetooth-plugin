@@ -202,6 +202,43 @@ Si se agrega un archivo `.c` con textos, sumarlo también a `po/POTFILES.in`.
 
 ## Al empaquetar
 
-El servicio de transferencia de archivos y libnotify son **opcionales**:
-declararlos como «recomendados» en Debian y como «opcionales» en Arch, nunca
-como dependencia obligatoria.
+El servicio de transferencia de archivos es **opcional**: «recomendado» en
+Debian (`bluez-obexd`) y «opcional» en Arch (`bluez-obex`), nunca
+obligatorio. libnotify es opcional **al compilar**, pero un paquete compilado
+con ella queda enlazado a la biblioteca y la necesita para arrancar: en los
+paquetes armados acá es obligatoria (es chica y viene en cualquier Xfce).
+
+### Paquetes automáticos (GitHub Actions)
+
+`.github/workflows/paquetes.yml` arma cuatro paquetes: Debian 12, Debian 13
+y Ubuntu 24.04 (`.deb`, cada uno en su sistema, dentro de un contenedor) y
+Arch (`.pkg.tar.zst`).
+
+- **Al subir una etiqueta** `v<versión>`, los adjunta a una publicación de
+  versión. La etiqueta tiene que coincidir con la `version` de
+  `meson.build`; si no, el flujo se corta con un error que lo dice.
+- **A mano** (Actions → Paquetes → Run workflow), los deja como archivos
+  descargables de esa ejecución, sin publicar.
+
+Para publicar una versión nueva: cambiar `version` en `meson.build` (y en
+`plugin.c`, en la ventana «Acerca de»), subir el cambio, y después
+`git tag v0.1.1 && git push origin v0.1.1`.
+
+Los archivos de empaquetado:
+
+- `debian/`: `control` (dependencias), `rules`, `copyright`. **`rules`
+  fuerza Meson** (`--buildsystem=meson`): como el proyecto también trae
+  `CMakeLists.txt`, la herramienta de Debian elegía CMake, que ignora
+  `plugin_dir` y dejaba el complemento fuera de la carpeta multiarquitectura
+  que mira el panel. `changelog` lo reescribe el flujo con la versión y el
+  sistema (`0.1.0-1~deb12`, etc.).
+- `packaging/arch/PKGBUILD`: baja el código de la etiqueta en GitHub; el
+  flujo le deja al lado el comprimido con el mismo nombre y makepkg no
+  descarga nada. Sirve tal cual como base para el AUR.
+
+Para armar el `.deb` a mano en Debian o Ubuntu:
+
+```bash
+sudo apt install build-essential && sudo apt build-dep ./
+dpkg-buildpackage -us -uc -b      # el paquete queda en la carpeta de arriba
+```

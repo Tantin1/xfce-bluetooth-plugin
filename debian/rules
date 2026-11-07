@@ -1,0 +1,16 @@
+#!/usr/bin/make -f
+
+include /usr/share/dpkg/architecture.mk
+
+# El proyecto también trae CMakeLists.txt, y dh elige CMake antes que Meson
+# si no se le dice: se fuerza Meson, que es el sistema recomendado.
+%:
+	dh $@ --buildsystem=meson
+
+# La carpeta de complementos del panel en Debian y Ubuntu lleva la
+# arquitectura en la ruta. Se indica a mano: la detección automática de
+# meson.build mira si la carpeta existe en la máquina que compila, y en un
+# contenedor limpio no existe.
+override_dh_auto_configure:
+	dh_auto_configure -- \
+		-Dplugin_dir=/usr/lib/$(DEB_HOST_MULTIARCH)/xfce4/panel/plugins

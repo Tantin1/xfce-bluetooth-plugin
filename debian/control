@@ -1,0 +1,28 @@
+Source: xfce-bluetooth-plugin
+Section: xfce
+Priority: optional
+Maintainer: Tantin <juanchiperez97@gmail.com>
+Build-Depends: debhelper-compat (= 13),
+               meson,
+               ninja-build,
+               pkgconf,
+               gettext,
+               libglib2.0-dev,
+               libgtk-3-dev,
+               libxfce4panel-2.0-dev,
+               libnotify-dev
+Standards-Version: 4.6.2
+Homepage: https://github.com/Tantin1/xfce-bluetooth-plugin
+Rules-Requires-Root: no
+
+Package: xfce-bluetooth-plugin
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, xfce4-panel, bluez
+Recommends: bluez-obexd
+Description: Bluetooth manager plugin for the Xfce panel
+ Manage Bluetooth from the Xfce panel: turn adapters on and off, pair,
+ connect and disconnect devices, rename them, mark them as trusted or
+ blocked, and send and receive files.
+ .
+ File transfer needs the bluez-obexd package, which is recommended but
+ not required. Works on X11 and Wayland.
