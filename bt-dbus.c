@@ -927,21 +927,30 @@ bt_get_status (GDBusConnection *conn)
     }
     bt_adapter_list_free (as);
 
-    if (!s->powered)
-        return s;
+    GPtrArray *paths = g_ptr_array_new ();
+    GPtrArray *names = g_ptr_array_new ();
 
-    GSList *ds = bt_get_devices (conn, NULL);
-    for (GSList *l = ds; l; l = l->next) {
-        BtDevice *d = l->data;
-        if (!d->connected)
-            continue;
-        s->n_connected++;
-        if (!s->first_name) {
-            s->first_name = g_strdup (d->name);
-            s->first_icon = g_strdup (bt_device_icon_name (d));
+    if (s->powered) {
+        GSList *ds = bt_get_devices (conn, NULL);
+        for (GSList *l = ds; l; l = l->next) {
+            BtDevice *d = l->data;
+            if (!d->connected)
+                continue;
+            s->n_connected++;
+            if (!s->first_name) {
+                s->first_name = g_strdup (d->name);
+                s->first_icon = g_strdup (bt_device_icon_name (d));
+            }
+            g_ptr_array_add (paths, g_strdup (d->object_path));
+            g_ptr_array_add (names, g_strdup (d->name));
         }
+        bt_device_list_free (ds);
     }
-    bt_device_list_free (ds);
+
+    g_ptr_array_add (paths, NULL);
+    g_ptr_array_add (names, NULL);
+    s->connected_paths = (gchar **) g_ptr_array_free (paths, FALSE);
+    s->connected_names = (gchar **) g_ptr_array_free (names, FALSE);
     return s;
 }
 
@@ -951,6 +960,8 @@ bt_status_free (BtStatus *s)
     if (!s) return;
     g_free (s->first_name);
     g_free (s->first_icon);
+    g_strfreev (s->connected_paths);
+    g_strfreev (s->connected_names);
     g_free (s);
 }
 

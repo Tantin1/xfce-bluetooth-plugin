@@ -9,6 +9,7 @@
 #include <libxfce4panel/libxfce4panel.h>
 #include <gtk/gtk.h>
 #include <glib/gi18n-lib.h>
+#include <glib/gstdio.h>
 #ifdef HAVE_LIBNOTIFY
 #include <libnotify/notify.h>
 #endif
@@ -103,7 +104,17 @@ typedef struct {
     gboolean  last_available;
     gboolean  last_powered;
     gint      last_connected;
-    gchar    *last_name;
+    /* Conectados en la última lectura (ruta y nombre, en paralelo): al
+     * comparar con la nueva se sabe cuál se conectó o se desconectó. */
+    gchar   **last_paths;
+    gchar   **last_names;
+
+#ifdef HAVE_LIBNOTIFY
+    /* UNA sola notificación de conexiones, que se actualiza: el aviso nuevo
+     * reemplaza al anterior en vez de apilarse. Se crea con el primer aviso.
+     * Los archivos recibidos van aparte (bt-obex-agent.c), uno por archivo. */
+    NotifyNotification *conn_notif;
+#endif
 } BtPlugin;
 
 static void on_configure_plugin (XfcePanelPlugin *plugin, BtPlugin *bp);
@@ -210,20 +221,27 @@ apply_config (BtPlugin *bp)
 
 /* ---------- leer / guardar configuración ---------- */
 
-#define CONFIG_PATH "xfce4/panel/xfce-bluetooth-plugin.ini"
+/* Un archivo POR INSTANCIA, como los complementos nativos: el panel da la
+ * ruta (~/.config/xfce4/panel/xfce-bluetooth-plugin-<número>.rc, con el
+ * número de la instancia) y el archivo se borra cuando el usuario quita el
+ * complemento del panel (ver on_plugin_removed). Así, quitarlo y volver a
+ * agregarlo arranca con los valores por omisión.
+ *
+ * Hasta el 0058 había un solo archivo fijo, que nadie borraba. Si la
+ * instancia todavía no tiene el suyo y existe el viejo, se lo lee una vez,
+ * se guarda en el nuevo y se borra el viejo: actualizar el complemento no
+ * hace perder la configuración. */
+#define LEGACY_CONFIG_PATH "xfce4/panel/xfce-bluetooth-plugin.ini"
 
-static gchar *
-get_config_path (void)
-{
-    return g_build_filename (g_get_user_config_dir (), CONFIG_PATH, NULL);
-}
+static gboolean save_config (BtPlugin *bp);
 
 static void
 load_config (BtPlugin *bp)
 {
-    GKeyFile *kf   = g_key_file_new ();
-    gchar    *path = get_config_path ();
-    GError   *err  = NULL;
+    GKeyFile *kf     = g_key_file_new ();
+    gchar    *path   = xfce_panel_plugin_save_location (bp->plugin, FALSE);
+    gchar    *legacy = NULL;
+    GError   *err    = NULL;
 
     bp->square_button      = DEFAULT_SQUARE_BUTTON;
     bp->plugin_size        = DEFAULT_PLUGIN_SIZE;
@@ -246,8 +264,18 @@ load_config (BtPlugin *bp)
         bp->receive_folder = g_strdup (dl != NULL ? dl : g_get_home_dir ());
     }
 
-    if (!g_key_file_load_from_file (kf, path, G_KEY_FILE_NONE, &err)) {
+    /* Sin archivo propio todavía: ¿quedó el archivo único de antes? */
+    if (path == NULL || !g_file_test (path, G_FILE_TEST_EXISTS)) {
+        legacy = g_build_filename (g_get_user_config_dir (),
+                                   LEGACY_CONFIG_PATH, NULL);
+        if (!g_file_test (legacy, G_FILE_TEST_EXISTS))
+            g_clear_pointer (&legacy, g_free);
+    }
+
+    if (!g_key_file_load_from_file (kf, legacy != NULL ? legacy : path,
+                                    G_KEY_FILE_NONE, &err)) {
         g_clear_error (&err);
+        g_clear_pointer (&legacy, g_free);
         goto out;
     }
 
@@ -300,19 +328,29 @@ load_config (BtPlugin *bp)
     if (bp->popup_height == 0) bp->popup_height = DEFAULT_POPUP_HEIGHT;
 
 out:
+    /* Pasar lo leído del archivo viejo al de esta instancia. El viejo se
+     * borra solo si el nuevo quedó guardado. */
+    if (legacy != NULL && save_config (bp))
+        g_unlink (legacy);
+
     g_key_file_free (kf);
+    g_free (legacy);
     g_free (path);
 }
 
-static void
+static gboolean
 save_config (BtPlugin *bp)
 {
     GKeyFile *kf   = g_key_file_new ();
-    gchar    *path = get_config_path ();
-    gchar    *dir  = g_path_get_dirname (path);
+    /* TRUE: el panel crea la carpeta si no existe. */
+    gchar    *path = xfce_panel_plugin_save_location (bp->plugin, TRUE);
     GError   *err  = NULL;
+    gboolean  ok   = FALSE;
 
-    g_mkdir_with_parents (dir, 0755);
+    if (path == NULL) {
+        g_key_file_free (kf);
+        return FALSE;
+    }
 
     g_key_file_set_boolean (kf, "appearance", "square_button",      bp->square_button);
     g_key_file_set_integer (kf, "appearance", "plugin_size",        bp->plugin_size);
@@ -330,15 +368,16 @@ save_config (BtPlugin *bp)
     if (bp->receive_folder != NULL)
         g_key_file_set_string (kf, "transfer", "receive_folder", bp->receive_folder);
 
-    if (!g_key_file_save_to_file (kf, path, &err)) {
+    ok = g_key_file_save_to_file (kf, path, &err);
+    if (!ok) {
         g_warning ("xfce-bluetooth-plugin: no se pudo guardar la configuración: %s",
                    err->message);
         g_error_free (err);
     }
 
     g_key_file_free (kf);
-    g_free (dir);
     g_free (path);
+    return ok;
 }
 
 /* ---------- recepción de archivos ----------
@@ -928,6 +967,50 @@ bt_plugin_set_busy (gpointer bp_ptr, gboolean busy)
 
 /* ---------- refresco por señales DBus ---------- */
 
+#ifdef HAVE_LIBNOTIFY
+/* Una línea por cada dispositivo de `names` cuya ruta en `paths` no está en
+ * `other`. Antes solo se recordaba el primer conectado, y desconectar el
+ * segundo de dos avisaba que se había ido el primero. */
+static void
+append_changes (GString *body, gchar **paths, gchar **names,
+                gchar **other, const gchar *fmt)
+{
+    for (guint i = 0; paths != NULL && paths[i] != NULL; i++) {
+        if (other != NULL && g_strv_contains ((const gchar * const *) other,
+                                              paths[i]))
+            continue;
+        if (body->len > 0)
+            g_string_append_c (body, '\n');
+        g_string_append_printf (body, fmt, names[i]);
+    }
+}
+
+static void
+notify_connection_changes (BtPlugin *bp, BtStatus *st)
+{
+    GString *body = g_string_new (NULL);
+
+    append_changes (body, st->connected_paths, st->connected_names,
+                    bp->last_paths, _("%s connected"));
+    gboolean any_connected = body->len > 0;
+    append_changes (body, bp->last_paths, bp->last_names,
+                    st->connected_paths, _("%s disconnected"));
+
+    if (body->len > 0) {
+        const gchar *icon = any_connected ? "bluetooth-active-symbolic"
+                                          : "bluetooth-disabled-symbolic";
+        if (bp->conn_notif == NULL)
+            bp->conn_notif = notify_notification_new (_("Bluetooth"),
+                                                      body->str, icon);
+        else
+            notify_notification_update (bp->conn_notif, _("Bluetooth"),
+                                        body->str, icon);
+        notify_notification_show (bp->conn_notif, NULL);
+    }
+    g_string_free (body, TRUE);
+}
+#endif
+
 static gboolean
 on_bt_changed_cb (gpointer user_data)
 {
@@ -942,10 +1025,6 @@ on_bt_changed_cb (gpointer user_data)
     bt_cache_end ();
 
     gboolean prev_available = bp->last_available;
-#ifdef HAVE_LIBNOTIFY
-    gint     prev_connected = bp->last_connected;
-#endif
-    gchar   *prev_name      = bp->last_name;
 
     /* bluetoothd volvió al bus tras un reinicio: se le olvidaron todos los
      * agentes registrados, así que hay que volver a presentarse. */
@@ -955,26 +1034,11 @@ on_bt_changed_cb (gpointer user_data)
     update_panel_icon (bp, st->available, st->powered, st->n_connected);
 
 #ifdef HAVE_LIBNOTIFY
-    if (bp->notif_ready && bp->show_notifications) {
-        NotifyNotification *notif = NULL;
-        if (st->n_connected > prev_connected && st->first_name) {
-            gchar *body = g_strdup_printf (_("%s connected"), st->first_name);
-            notif = notify_notification_new (_("Bluetooth"), body,
-                                             "bluetooth-active-symbolic");
-            g_free (body);
-        } else if (st->n_connected < prev_connected) {
-            gchar *body = prev_name
-                ? g_strdup_printf (_("%s disconnected"), prev_name)
-                : g_strdup (_("Device disconnected"));
-            notif = notify_notification_new (_("Bluetooth"), body,
-                                             "bluetooth-disabled-symbolic");
-            g_free (body);
-        }
-        if (notif) {
-            notify_notification_show (notif, NULL);
-            g_object_unref (notif);
-        }
-    }
+    /* Con el menú abierto no se avisa: lo que cambió ya se ve ahí. El
+     * botón queda apretado exactamente mientras el menú está abierto. */
+    if (bp->notif_ready && bp->show_notifications
+        && !gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (bp->button)))
+        notify_connection_changes (bp, st);
     bp->notif_ready = TRUE;
 #endif
 
@@ -995,8 +1059,12 @@ on_bt_changed_cb (gpointer user_data)
         g_free (tip);
     }
 
-    bp->last_name = g_strdup (st->first_name);
-    g_free (prev_name);
+    /* Se recuerda siempre, haya habido aviso o no: si no, al cerrar el
+     * menú se avisaría lo que ya se vio con él abierto. */
+    g_strfreev (bp->last_paths);
+    g_strfreev (bp->last_names);
+    bp->last_paths = g_steal_pointer (&st->connected_paths);
+    bp->last_names = g_steal_pointer (&st->connected_names);
 
     bt_status_free (st);
 
@@ -1028,6 +1096,12 @@ on_button_toggled (GtkToggleButton *btn, BtPlugin *bp)
         return;
     }
     if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (bp->button))) {
+#ifdef HAVE_LIBNOTIFY
+        /* El menú muestra lo mismo: se saca el aviso de conexión que haya
+         * quedado en pantalla. Los de archivos recibidos no se tocan. */
+        if (bp->conn_notif != NULL)
+            notify_notification_close (bp->conn_notif, NULL);
+#endif
         bp->popup->show_separators = bp->show_separators;
         bp->popup->show_unnamed    = bp->show_unnamed;
         popup_show (bp->popup, bp->plugin, bp->button, bp->conn,
@@ -1268,9 +1342,26 @@ bt_plugin_free (XfcePanelPlugin *plugin, BtPlugin *bp)
         g_object_unref (bp->conn);
     if (bp->button_css)
         g_object_unref (bp->button_css);
-    g_free (bp->last_name);
+    g_strfreev (bp->last_paths);
+    g_strfreev (bp->last_names);
+#ifdef HAVE_LIBNOTIFY
+    g_clear_object (&bp->conn_notif);
+#endif
     g_free (bp->receive_folder);
     g_free (bp);
+}
+
+/* El usuario quitó el complemento del panel (no se llama al cerrar la
+ * sesión ni al reiniciar el panel). Igual que los nativos, se borra la
+ * configuración de esta instancia: volver a agregarlo arranca de cero. */
+static void
+on_plugin_removed (XfcePanelPlugin *plugin, BtPlugin *bp)
+{
+    (void) bp;
+    gchar *path = xfce_panel_plugin_save_location (plugin, FALSE);
+    if (path != NULL)
+        g_unlink (path);
+    g_free (path);
 }
 
 static void
@@ -1291,6 +1382,7 @@ bt_plugin_construct (XfcePanelPlugin *plugin)
     xfce_panel_plugin_menu_show_about (plugin);
     g_signal_connect (plugin, "about",            G_CALLBACK (bt_plugin_about),     bp);
     g_signal_connect (plugin, "free-data",        G_CALLBACK (bt_plugin_free),      bp);
+    g_signal_connect (plugin, "removed",          G_CALLBACK (on_plugin_removed),   bp);
     g_signal_connect (plugin, "configure-plugin", G_CALLBACK (on_configure_plugin), bp);
     /* OJO: "size-changed" ya se conecta en bt_plugin_new; conectarla otra vez
      * acá hacía que apply_config corriera dos veces por cada cambio. */

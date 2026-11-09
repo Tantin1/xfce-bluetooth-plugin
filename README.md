@@ -19,7 +19,9 @@ GNOME, sin abrir ningún programa aparte.
 - Hacer visible el equipo para otros aparatos. La visibilidad **se apaga sola
   a los 3 minutos**.
 - Mostrar la batería del aparato, cuando el aparato la informa.
-- Avisar con una notificación al conectar y desconectar (opcional).
+- Avisar con una notificación al conectar y desconectar (opcional). El aviso
+  nuevo reemplaza al anterior en vez de apilarse, y con el menú abierto no se
+  avisa: ya se ve ahí.
 - **Enviar archivos** a un teléfono u otro equipo, con barra de progreso.
 - **Recibir archivos**, con un cartel para aceptar o rechazar, barra de
   progreso y botón «Mostrar en la carpeta».

@@ -66,6 +66,11 @@ typedef struct {
     gint      n_connected;
     gchar    *first_name;    /* nombre del primer dispositivo conectado */
     gchar    *first_icon;    /* su ícono */
+    /* Todos los conectados, en el mismo orden y terminadas en NULL: la ruta
+     * (clave estable) y el nombre. Sirven para saber CUÁL se conectó o
+     * desconectó entre dos lecturas; con adaptador apagado, vacías. */
+    gchar   **connected_paths;
+    gchar   **connected_names;
 } BtStatus;
 
 /* ============================================================

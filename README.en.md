@@ -19,7 +19,9 @@ program.
 - Make the computer visible to other devices. Visibility **turns itself off
   after 3 minutes**.
 - Show the device's battery level, when the device reports it.
-- Optional desktop notifications on connect and disconnect.
+- Optional desktop notifications on connect and disconnect. A new one
+  replaces the previous one instead of stacking up, and none is shown while
+  the menu is open, since the menu already shows it.
 - **Send files** to a phone or another computer, with a progress bar.
 - **Receive files**, with a prompt to accept or reject, a progress bar and a
   "Show in folder" button.
