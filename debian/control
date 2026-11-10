@@ -1,7 +1,7 @@
 Source: xfce-bluetooth-plugin
 Section: xfce
 Priority: optional
-Maintainer: Tantin <juanchiperez97@gmail.com>
+Maintainer: Tantin1 <juanperez33840@gmail.com>
 Build-Depends: debhelper-compat (= 13),
                meson,
                ninja-build,

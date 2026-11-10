@@ -136,10 +136,6 @@ msgstr "Bluetooth"
 msgid "%s disconnected"
 msgstr "%s verbroken"
 
-#: plugin.c:899
-msgid "Device disconnected"
-msgstr "Apparaat verbroken"
-
 #: plugin.c:916 popup-sections.c:210
 msgid "No Bluetooth adapter"
 msgstr "Geen Bluetooth-adapter"
@@ -853,3 +849,6 @@ msgstr "Vast aan het paneel"
 #: plugin.c:728
 msgid "Automatic: floating with rounded corners when the theme rounds its popovers; otherwise attached to the panel."
 msgstr "Automatisch: zwevend met afgeronde hoeken als het thema zijn popovers afrondt; anders vast aan het paneel."
+
+#~ msgid "Device disconnected"
+#~ msgstr "Apparaat verbroken"

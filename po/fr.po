@@ -136,10 +136,6 @@ msgstr "Bluetooth"
 msgid "%s disconnected"
 msgstr "%s déconnecté"
 
-#: plugin.c:899
-msgid "Device disconnected"
-msgstr "Appareil déconnecté"
-
 #: plugin.c:916 popup-sections.c:210
 msgid "No Bluetooth adapter"
 msgstr "Aucun adaptateur Bluetooth"
@@ -853,3 +849,6 @@ msgstr "Collée au tableau de bord"
 #: plugin.c:728
 msgid "Automatic: floating with rounded corners when the theme rounds its popovers; otherwise attached to the panel."
 msgstr "Automatique : flottante aux coins arrondis si le thème arrondit ses popovers ; sinon collée au tableau de bord."
+
+#~ msgid "Device disconnected"
+#~ msgstr "Appareil déconnecté"

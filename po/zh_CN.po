@@ -133,10 +133,6 @@ msgstr "蓝牙"
 msgid "%s disconnected"
 msgstr "%s 已断开"
 
-#: plugin.c:899
-msgid "Device disconnected"
-msgstr "设备已断开"
-
 #: plugin.c:916 popup-sections.c:210
 msgid "No Bluetooth adapter"
 msgstr "没有蓝牙适配器"
@@ -831,3 +827,6 @@ msgstr "贴靠面板"
 #: plugin.c:728
 msgid "Automatic: floating with rounded corners when the theme rounds its popovers; otherwise attached to the panel."
 msgstr "自动：如果主题为弹出框使用圆角，则以圆角浮动显示；否则贴靠面板。"
+
+#~ msgid "Device disconnected"
+#~ msgstr "设备已断开"

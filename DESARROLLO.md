@@ -2,7 +2,7 @@
 
 Lo que no le hace falta a quien solo instala el complemento: cómo está
 armado, por qué algunas cosas son como son, y cómo compilar con CMake o
-traducir. Para instalar y usar, ver [README.md](README.md).
+traducir. Para instalar y usar, ver [README.es.md](README.es.md).
 
 ## Alcance
 

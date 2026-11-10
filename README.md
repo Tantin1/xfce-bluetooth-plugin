@@ -1,97 +1,95 @@
 # xfce-bluetooth-plugin
 
-*[English version](README.en.md)*
+*[Leer en español](README.es.md)*
 
-Complemento liviano para manejar el Bluetooth desde el panel de Xfce. Cubre
-lo de todos los días, a la par de lo que traen los escritorios Cinnamon o
-GNOME, sin abrir ningún programa aparte.
+A lightweight Bluetooth plugin for the Xfce panel. It covers everyday use, on
+par with what the Cinnamon or GNOME desktops ship, without opening a separate
+program.
 
-## Qué hace
+## What it does
 
-- Conectar, desconectar, emparejar, olvidar, bloquear y marcar como de
-  confianza (para que se conecte solo).
-- **Reconectar** en un clic, para el auricular que quedó conectado pero mudo.
-- **Conectar un perfil puntual** de un aparato: sonido, manos libres, teclado
-  o mouse.
-- **Renombrar** un aparato emparejado. Si dejás el nombre vacío, vuelve al de
-  fábrica.
-- Pedir y confirmar códigos de emparejamiento.
-- Hacer visible el equipo para otros aparatos. La visibilidad **se apaga sola
-  a los 3 minutos**.
-- Mostrar la batería del aparato, cuando el aparato la informa.
-- Avisar con una notificación al conectar y desconectar (opcional). El aviso
-  nuevo reemplaza al anterior en vez de apilarse, y con el menú abierto no se
-  avisa: ya se ve ahí.
-- **Enviar archivos** a un teléfono u otro equipo, con barra de progreso.
-- **Recibir archivos**, con un cartel para aceptar o rechazar, barra de
-  progreso y botón «Mostrar en la carpeta».
-- Manejar varios adaptadores, cada uno con su interruptor.
+- Connect, disconnect, pair, forget, block and mark devices as trusted (so
+  they connect on their own).
+- **Reconnect** in one click, for the headset that is connected but silent.
+- **Connect a single profile** of a device: audio, hands-free, keyboard or
+  mouse.
+- **Rename** a paired device. Leaving the name empty restores the factory
+  name.
+- Ask for and confirm pairing codes.
+- Make the computer visible to other devices. Visibility **turns itself off
+  after 3 minutes**.
+- Show the device's battery level, when the device reports it.
+- Optional desktop notifications on connect and disconnect. A new one
+  replaces the previous one instead of stacking up, and none is shown while
+  the menu is open, since the menu already shows it.
+- **Send files** to a phone or another computer, with a progress bar.
+- **Receive files**, with a prompt to accept or reject, a progress bar and a
+  "Show in folder" button.
+- Handle several adapters, each with its own switch.
 
-La lista de aparatos se mantiene quieta: arriba los conectados, después los
-emparejados en orden alfabético y al final los de paso, agrupados por
-cercanía.
+The device list stays still: connected devices first, then paired ones in
+alphabetical order, and nearby unpaired ones last, grouped by distance.
 
-## Qué no hace, a propósito
+## What it does not do, on purpose
 
-- **Compartir internet del teléfono por Bluetooth.** Si usás NetworkManager,
-  su propio ícono del panel ya lo hace, y bien.
-- **Elegir entre sonido de alta calidad y manos libres.** Eso lo decide el
-  servidor de sonido (PipeWire o PulseAudio), desde su control de volumen.
-- **Las funciones avanzadas de Blueman**, como la ventana de servicios
-  locales o el asistente paso a paso. Si las necesitás, Blueman sigue siendo
-  la herramienta indicada.
+- **Bluetooth internet sharing from a phone.** If you use NetworkManager, its
+  own panel icon already does that well.
+- **Choosing between high-quality audio and hands-free.** The sound server
+  (PipeWire or PulseAudio) decides that, from its volume control.
+- **Blueman's advanced features**, such as the local services window or the
+  step-by-step wizard. If you need them, Blueman is still the right tool.
 
-## Con qué funciona
+## Requirements
 
-- Xfce 4.18 o posterior, sobre X11. También en Wayland, con el panel 4.20 o
-  posterior (probado sobre labwc).
-- Probado en CachyOS. Pensado también para Debian 12 y sus derivadas
+- Xfce 4.18 or later, on X11. Also on Wayland, with panel 4.20 or later
+  (tested on labwc).
+- Tested on CachyOS. Also intended for Debian 12 and its derivatives
   (Loc OS, CuerdOS).
-- Versiones mínimas: GTK 3.24, GLib 2.56, panel de Xfce 4.18 y, si se usan
-  las notificaciones, libnotify 0.7.
+- Minimum versions: GTK 3.24, GLib 2.56, Xfce panel 4.18 and, for
+  notifications, libnotify 0.7.
 
-## Instalar
+## Install
 
-### Con un paquete (lo más fácil)
+### From a package (easiest)
 
-En la página de versiones del proyecto
-(<https://github.com/Tantin1/xfce-bluetooth-plugin/releases>) hay paquetes
-listos para Debian 12, Debian 13, Ubuntu 24.04 y Arch. Bajá el que
-corresponda a tu sistema y, desde la carpeta donde quedó:
+Check the project's [releases page](https://github.com/Tantin1/xfce-bluetooth-plugin/releases)
+for packages built for Debian 12, Debian 13, Ubuntu 24.04 and Arch. If a
+compatible package is available, download it and, from the folder where it
+was saved:
 
 ```bash
-# Debian y Ubuntu (el nombre exacto cambia con la versión y el sistema)
+# Debian and Ubuntu (the exact name depends on the version and system)
 sudo apt install ./xfce-bluetooth-plugin_*.deb
 
 # Arch
 sudo pacman -U xfce-bluetooth-plugin-*.pkg.tar.zst
 ```
 
-Después, `xfce4-panel -r` y agregalo como se explica al final del punto 2.
-El servicio de transferencia de archivos se sugiere al instalar, pero no es
-obligatorio (ver el punto 3).
+Then run `xfce4-panel -r` and add it as explained at the end of step 2.
+The file transfer service is suggested on install but not required (see
+step 3).
 
-Si tu sistema no está en la lista, o preferís compilarlo:
+If your system is not listed, or you prefer to build it yourself:
 
-### 1. Lo necesario para compilar
+### 1. Build dependencies
 
-En Debian y derivadas:
+On Debian and derivatives:
 
 ```bash
 sudo apt install build-essential meson ninja-build pkg-config gettext \
                  libgtk-3-dev libxfce4panel-2.0-dev libglib2.0-dev libnotify-dev
 ```
 
-En Arch y derivadas:
+On Arch and derivatives:
 
 ```bash
 sudo pacman -S --needed base-devel meson ninja gettext gtk3 xfce4-panel libnotify
 ```
 
-`libnotify` es opcional: sin ella el complemento compila igual, solo que sin
-notificaciones.
+`libnotify` is optional: without it the plugin still builds, just without
+notifications.
 
-### 2. Compilar e instalar
+### 2. Build and install
 
 ```bash
 meson setup build --prefix=/usr
@@ -100,94 +98,97 @@ sudo ninja -C build install
 xfce4-panel -r
 ```
 
-En Arch y derivadas, si la instalación protesta, usá
-`sudo meson install -C build --no-rebuild`.
+Avoid manual system-wide installation over files owned by a distribution
+package (especially on Arch). Use the distribution's package manager instead.
 
-Después: clic derecho en el panel → Panel → Añadir elementos nuevos →
-«Complemento de Bluetooth».
+Then: right-click the panel → Panel → Add New Items, and pick the Bluetooth
+plugin.
 
-Si el complemento no aparece en esa lista, el archivo compilado quedó en una
-carpeta que tu panel no revisa. Indicale la correcta al configurar (el
-ejemplo es la de Debian):
+If the plugin does not show up in that list, the compiled file ended up in a
+folder your panel does not look in. Point it to the right one when
+configuring (the example is Debian's):
 
 ```bash
 meson setup build --prefix=/usr -Dplugin_dir=/usr/lib/x86_64-linux-gnu/xfce4/panel/plugins
 ```
 
-También se puede compilar con CMake; está explicado en
-[DESARROLLO.md](DESARROLLO.md).
+Building with CMake is also possible; see [DESARROLLO.md](DESARROLLO.md)
+(developer notes, in Spanish).
 
-### 3. Lo necesario para usarlo
+### 3. Runtime dependencies
 
-- **`bluez`**, con su servicio funcionando. Es obligatorio. Para comprobarlo:
+- **`bluez`**, with its service running. Required. To check:
 
   ```bash
   systemctl status bluetooth
   ```
 
-  En distribuciones sin systemd, con la herramienta de servicios que traiga
-  (por ejemplo `service bluetooth status`).
+  On distributions without systemd, use their own service tool (for
+  example `service bluetooth status`).
 
-- **El servicio de transferencia de archivos**, solo si querés enviar o
-  recibir archivos. Viene en un paquete aparte: `bluez-obex` en Arch,
-  `bluez-obexd` en Debian. En algunas distribuciones con systemd, además,
-  hay que encenderlo (sin systemd no hace falta: lo arranca el sistema solo
-  cuando se lo necesita):
+- **The file transfer service**, only if you want to send or receive files.
+  It comes in a separate package: `bluez-obex` on Arch, `bluez-obexd` on
+  Debian. On some distributions with systemd it also has to be enabled
+  (without systemd there is nothing to enable: the system starts it on
+  demand):
 
   ```bash
   systemctl --user enable --now obex.service
   ```
 
-  No hace falta adivinar: en Propiedades → «Transferencia de archivos» el
-  complemento dice qué falta y te da la orden exacta.
+  No guessing needed: Properties → "File transfer" tells you what is missing
+  and gives you the exact command.
 
-## Desinstalar
+## Uninstall
 
-Si lo instalaste con un paquete:
+If you installed a package:
 
 ```bash
-sudo apt remove xfce-bluetooth-plugin      # Debian y Ubuntu
+sudo apt remove xfce-bluetooth-plugin      # Debian and Ubuntu
 sudo pacman -R xfce-bluetooth-plugin       # Arch
 xfce4-panel -r
 ```
 
-Si lo compilaste, desde la misma carpeta donde lo hiciste:
+If you built it, from the same folder where you did:
 
 ```bash
 sudo ninja -C build uninstall
 xfce4-panel -r
 ```
 
-## Recibir archivos
+## Receiving files
 
-Viene **apagado**, porque encenderlo anuncia que tu equipo acepta archivos.
-Se activa en Propiedades → «Transferencia de archivos» → «Recibir archivos de
-otros dispositivos», donde también elegís la carpeta (por omisión,
-Descargas).
+It is **off** by default, because turning it on announces that your computer
+accepts files. Enable it in Properties → "File transfer" → "Receive files
+from other devices", where you also pick the folder (Downloads by default).
 
-**Si el teléfono dice «transferencia prohibida»**, casi siempre la culpa es
-del servicio de transferencia: algunas versiones se niegan a escribir cuando
-la carpeta pasa por un enlace simbólico, y otras rechazan todo por una falla
-propia. En esa misma ventana aparece el botón **«Arreglar
-automáticamente»**, que lo resuelve sin pedir contraseña, con systemd o sin
-él.
+**If the phone says "transfer forbidden"**, the file transfer service is
+almost always to blame: some versions refuse to write when the folder goes
+through a symbolic link, and others reject everything because of a bug of
+their own. That same window shows a **"Fix automatically"** button that
+solves it without asking for a password, with or without systemd.
 
-**Solo un programa puede recibir archivos a la vez.** Si Blueman está
-abierto, el complemento te lo avisa y vuelve a intentar solo cada minuto:
-alcanza con cerrar Blueman.
+**Only one program can receive files at a time.** If Blueman is running, the
+plugin tells you so and retries on its own every minute: just close Blueman.
 
-Para investigar un fallo, el registro que sirve es el del servicio de
-transferencia:
+To investigate a failure, the useful log is the transfer service's:
 
 ```bash
 journalctl --user -u obex --since "5 minutes ago" --no-pager
 ```
 
-## Traducciones
+## Translations
 
-Está en español e inglés. Para agregar un idioma, mirá
-[DESARROLLO.md](DESARROLLO.md).
+The original interface text is in English. Translations are provided for
+13 locales: German, Spanish, French, Italian, Japanese, Korean, Dutch,
+Polish, Portuguese, Brazilian Portuguese, Russian, Turkish and Simplified
+Chinese. To add a language, see [DESARROLLO.md](DESARROLLO.md)
+(developer notes in Spanish).
 
-## Licencia
+## License
 
 GPL-2.0-or-later.
+
+## Maintainer
+
+Tantin1 · <juanperez33840@gmail.com>

@@ -134,10 +134,6 @@ msgstr "Bluetooth"
 msgid "%s disconnected"
 msgstr "%s が切断されました"
 
-#: plugin.c:899
-msgid "Device disconnected"
-msgstr "デバイスが切断されました"
-
 #: plugin.c:916 popup-sections.c:210
 msgid "No Bluetooth adapter"
 msgstr "Bluetooth アダプターがありません"
@@ -850,3 +846,6 @@ msgstr "パネルに接続"
 #: plugin.c:728
 msgid "Automatic: floating with rounded corners when the theme rounds its popovers; otherwise attached to the panel."
 msgstr "自動: テーマがポップオーバーの角を丸める場合は角丸のフローティング表示、それ以外はパネルに接続して表示します。"
+
+#~ msgid "Device disconnected"
+#~ msgstr "デバイスが切断されました"

@@ -128,10 +128,6 @@ msgstr ""
 msgid "%s disconnected"
 msgstr ""
 
-#: plugin.c:899
-msgid "Device disconnected"
-msgstr ""
-
 #: plugin.c:916 popup-sections.c:210
 msgid "No Bluetooth adapter"
 msgstr ""

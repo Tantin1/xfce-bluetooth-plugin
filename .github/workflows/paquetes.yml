@@ -85,7 +85,7 @@ jobs:
             echo
             echo "  * Paquete armado por GitHub Actions."
             echo
-            echo " -- Tantin <juanchiperez97@gmail.com>  $(date -R)"
+            echo " -- Tantin1 <juanperez33840@gmail.com>  $(date -R)"
           } > debian/changelog
           chmod +x debian/rules
           dpkg-buildpackage -us -uc -b
