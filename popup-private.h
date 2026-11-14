@@ -134,6 +134,9 @@ void      popup_send_file_flow       (BtPopup *popup, const gchar *address,
                                       const gchar *name);
 
 /* ---- popup-rows.c (fila de dispositivo, expand y sus callbacks) ---- */
+GtkWidget *expand_content_box (GtkWidget *expand);
+/* ---- popup.c ---- */
+gboolean   popup_anim_enabled (BtPopup *popup);   /* casilla «Activar animaciones» */
 gchar     *row_fingerprint       (BtPopup *popup, BtDevice *dev);
 GtkWidget *make_device_row       (BtDevice *dev, BtPopup *popup);
 void       row_update_in_place   (GtkWidget *event_box, BtDevice *dev);

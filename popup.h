@@ -75,10 +75,20 @@ typedef struct {
     /* Puntero opaco al BtPlugin del panel. Usado para el spinner del botón. */
     gpointer   plugin_ref;
 
-    /* TRUE mientras corre popup_hide. En Wayland, soltar el acaparamiento
-     * puede disparar "grab-broken-event" en el acto, y ese manejador vuelve
-     * a llamar a popup_hide: la marca corta esa vuelta. */
-    gboolean   hiding;
+    /* Cerrado para el programa pero todavía a la vista (fundido de salida).
+     * Va primero en el cierre lógico: en Wayland, soltar el acaparamiento
+     * puede disparar "grab-broken-event" en el acto, y soltar el botón del
+     * panel puede volver a entrar al cierre; con la marca puesta no pasa
+     * nada. Mientras está puesta, la ventana no ataja clics ni teclas. */
+    gboolean   closing;
+    guint      close_tick_id;     /* función por cuadro del fundido de salida */
+    guint      close_timeout_id;  /* tope: termina aunque no lleguen cuadros */
+    gint64     close_start;       /* momento del primer cuadro (0 = todavía no) */
+    gdouble    close_from;        /* opacidad con la que arrancó */
+    /* Fundido de entrada (popup_fade_begin): función por cuadro que sube la
+     * opacidad del marco, y el momento del primer cuadro (0 = todavía no). */
+    guint      fade_tick_id;
+    gint64     fade_start;
 
     /* Aspecto del tema (ver popup_update_rounding en popup.c). frame: caja
      * con nombre de componente "popover" que contiene todo; el tema le pone
@@ -117,13 +127,26 @@ GtkWidget *make_device_icon (const gchar *icon_name, gint icon_size);
 
 /* Controlado desde el popup para mostrar/ocultar el spinner del panel. */
 void bt_plugin_set_busy (gpointer bp_ptr, gboolean busy);
+/* El popup quedó cerrado para el programa: soltar el botón del panel. Se
+ * llama al empezar el cierre, no al ocultar la ventana (la define plugin.c). */
+void bt_plugin_popup_closed (gpointer bp_ptr);
 
 BtPopup *popup_create  (XfcePanelPlugin *plugin, GtkWidget *button);
 void     popup_show    (BtPopup *popup, XfcePanelPlugin *plugin,
                         GtkWidget *button, GDBusConnection *conn,
                         gint popup_width, gint popup_height);
-void     popup_hide    (BtPopup *popup);
-void     popup_destroy (BtPopup *popup);
+/* popup_hide: cierre de golpe (cierres automáticos, cuando enseguida se
+ * abre otra ventana, el compositor en Wayland). Si había un fundido de
+ * salida en curso, lo termina.
+ * popup_close: lo que cierra el usuario (Escape, clic afuera, botón del
+ * panel, pérdida de foco): con fundido si se puede, si no como popup_hide.
+ * popup_is_active: visible y no desvaneciéndose. Para preguntar «¿el menú
+ * está abierto?»; para «¿la ventana está en pantalla?» sigue valiendo
+ * gtk_widget_get_visible. */
+void     popup_hide      (BtPopup *popup);
+void     popup_close     (BtPopup *popup);
+gboolean popup_is_active (BtPopup *popup);
+void     popup_destroy   (BtPopup *popup);
 
 /* Para los carteles que aparecen solos (pareo, recepción): en Wayland la
  * ventana emergente abierta se queda con el teclado y el cartel no recibe lo

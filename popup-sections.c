@@ -543,7 +543,7 @@ refresh_ui_cb (gpointer user_data)
     g_object_set_data (G_OBJECT (popup->window), "refresh-pending", NULL);
 
     if (!popup->ui_built) return G_SOURCE_REMOVE;
-    if (!gtk_widget_get_visible (popup->window)) return G_SOURCE_REMOVE;
+    if (!popup_is_active (popup)) return G_SOURCE_REMOVE;
 
     /* Instantánea: todo el refresco lee de una sola foto del bus. */
     bt_cache_begin (popup->conn);
@@ -558,7 +558,7 @@ void
 schedule_refresh_ui (BtPopup *popup)
 {
     if (!popup || !popup->window) return;
-    if (!gtk_widget_get_visible (popup->window)) return;
+    if (!popup_is_active (popup)) return;
     if (g_object_get_data (G_OBJECT (popup->window), "refresh-pending"))
         return;
     g_object_set_data (G_OBJECT (popup->window), "refresh-pending",

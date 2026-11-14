@@ -849,5 +849,15 @@ msgstr "Attaccata al pannello"
 msgid "Automatic: floating with rounded corners when the theme rounds its popovers; otherwise attached to the panel."
 msgstr "Automatico: fluttuante con angoli arrotondati se il tema arrotonda i suoi popover; altrimenti attaccata al pannello."
 
+#: plugin.c:796
+msgid "Enable animations"
+msgstr "Abilita le animazioni"
+
+#: plugin.c:800
+msgid ""
+"Smooth transitions when opening the window and when expanding a device or "
+"its details."
+msgstr "Transizioni fluide all'apertura della finestra e quando si espande un dispositivo o i suoi dettagli."
+
 #~ msgid "Device disconnected"
 #~ msgstr "Dispositivo disconnesso"

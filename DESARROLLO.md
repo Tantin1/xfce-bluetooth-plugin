@@ -151,6 +151,24 @@ transparencia, deja las esquinas rectas y pega la ventana al panel y al
 borde. El diálogo de Propiedades se crea sin padre a propósito: en Wayland,
 con el panel como padre, las listas desplegables salen fuera de lugar.
 
+**Animaciones** (Propiedades, «Activar animaciones», clave `animations`,
+marcada de entrada). El panel de una fila se despliega y se pliega
+(150 ms), «Detalles» igual, y el menú aparece y se va con un fundido
+(100 ms, solo con ventana transparente). El fundido de salida es solo para
+lo que cierra el usuario (Escape, clic afuera, botón del panel); en Wayland,
+un clic en otra ventana lo cierra el compositor y corta de golpe. El cierre
+está partido en dos: el lógico (soltar la captura, el botón del panel, el
+bus) es inmediato; el visual (plegar, ocultar) llega al terminar el fundido.
+Para «¿el menú está abierto?» se usa `popup_is_active`, no si la ventana se
+ve. Reglas: la ventana nunca cambia de tamaño
+ni de lugar (lo que se anima vive dentro de la lista, que tiene alto fijo);
+solo se anima lo que el usuario despliega a mano, todo lo automático es
+instantáneo; nunca dos animaciones a la vez. La casilla le llega al menú
+como el dato `"bt-no-anim"` en su ventana (`popup_anim_enabled`); con ella
+desmarcada, o con las animaciones del sistema apagadas
+(`gtk-enable-animations`), todo es instantáneo. Detalle y trampas en
+`CONTEXT.md` (parches `0065` a `0069`).
+
 **Regla «imán».** A lo largo del panel: centrada sobre el botón; si no
 entra, se corre; si contra un borde queda un hueco menor que media ventana,
 se pega a ese borde. Vale para X11 y Wayland, con paneles horizontales y

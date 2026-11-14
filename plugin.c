@@ -26,6 +26,7 @@
 #define DEFAULT_POPUP_WIDTH         400
 #define DEFAULT_POPUP_HEIGHT        340
 #define DEFAULT_SHOW_SEPARATORS     TRUE
+#define DEFAULT_ANIMATIONS          TRUE
 #define DEFAULT_POPUP_STYLE         BT_POPUP_STYLE_AUTO
 #define DEFAULT_SHOW_NOTIFICATIONS  FALSE
 #define DEFAULT_SHOW_UNNAMED        TRUE
@@ -81,6 +82,7 @@ typedef struct {
     gint      popup_width;
     gint      popup_height;
     gboolean  show_separators;
+    gboolean  animations;       /* despliegues y fundidos del menú */
     gint      popup_style;      /* BtPopupStyle (ver popup.h) */
     gboolean  show_notifications;
     gboolean  show_unnamed;
@@ -250,6 +252,7 @@ load_config (BtPlugin *bp)
     bp->popup_width        = DEFAULT_POPUP_WIDTH;
     bp->popup_height       = DEFAULT_POPUP_HEIGHT;
     bp->show_separators    = DEFAULT_SHOW_SEPARATORS;
+    bp->animations         = DEFAULT_ANIMATIONS;
     bp->popup_style        = DEFAULT_POPUP_STYLE;
     bp->show_notifications = DEFAULT_SHOW_NOTIFICATIONS;
     bp->show_unnamed       = DEFAULT_SHOW_UNNAMED;
@@ -291,6 +294,9 @@ load_config (BtPlugin *bp)
     bp->show_separators = g_key_file_get_boolean (kf, "appearance", "show_separators", NULL);
     if (!g_key_file_has_key (kf, "appearance", "show_separators", NULL))
         bp->show_separators = DEFAULT_SHOW_SEPARATORS;
+    bp->animations = g_key_file_get_boolean (kf, "appearance", "animations", NULL);
+    if (!g_key_file_has_key (kf, "appearance", "animations", NULL))
+        bp->animations = DEFAULT_ANIMATIONS;
     bp->popup_style = g_key_file_get_integer (kf, "appearance", "popup_style", NULL);
     if (bp->popup_style < BT_POPUP_STYLE_AUTO ||
         bp->popup_style > BT_POPUP_STYLE_ATTACHED)
@@ -359,6 +365,7 @@ save_config (BtPlugin *bp)
     g_key_file_set_integer (kf, "appearance", "popup_width",        bp->popup_width);
     g_key_file_set_integer (kf, "appearance", "popup_height",       bp->popup_height);
     g_key_file_set_boolean (kf, "appearance", "show_separators",    bp->show_separators);
+    g_key_file_set_boolean (kf, "appearance", "animations",         bp->animations);
     g_key_file_set_integer (kf, "appearance", "popup_style",        bp->popup_style);
     g_key_file_set_boolean (kf, "appearance", "show_notifications", bp->show_notifications);
     g_key_file_set_boolean (kf, "appearance", "show_unnamed",       bp->show_unnamed);
@@ -421,6 +428,7 @@ typedef struct {
     GtkWidget *popup_height_spin;
     GtkWidget *separators_check;
     GtkWidget *style_combo;
+    GtkWidget *anim_check;
     GtkWidget *notifications_check;
     GtkWidget *unnamed_check;
     GtkWidget *hide_check;
@@ -496,6 +504,13 @@ on_separators_toggled (GtkToggleButton *btn, PropsDialog *pd)
     save_config (pd->bp);
     pd->bp->popup->show_separators = pd->bp->show_separators;
     pd->bp->popup->ui_built = FALSE;   /* forzar reconstrucción al reabrir */
+}
+
+static void
+on_animations_toggled (GtkToggleButton *btn, PropsDialog *pd)
+{
+    pd->bp->animations = gtk_toggle_button_get_active (btn);
+    save_config (pd->bp);
 }
 
 static void
@@ -776,6 +791,16 @@ on_configure_plugin (XfcePanelPlugin *plugin, BtPlugin *bp)
     gtk_grid_attach (GTK_GRID (grid), style_label,     0, row, 1, 1);
     gtk_grid_attach (GTK_GRID (grid), pd->style_combo, 1, row++, 1, 1);
 
+    /* En positivo, como Xfce y GNOME: «desactivar efectos» marcado para
+     * apagar confunde más. Se aplica desde la próxima apertura. */
+    pd->anim_check = gtk_check_button_new_with_label (_("Enable animations"));
+    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (pd->anim_check),
+                                  bp->animations);
+    gtk_widget_set_tooltip_text (pd->anim_check,
+        _("Smooth transitions when opening the window and when expanding a "
+          "device or its details."));
+    gtk_grid_attach (GTK_GRID (grid), pd->anim_check, 0, row++, 2, 1);
+
     GtkWidget *sep3 = gtk_separator_new (GTK_ORIENTATION_HORIZONTAL);
     gtk_widget_set_margin_top (sep3, 4);
     gtk_widget_set_margin_bottom (sep3, 4);
@@ -927,6 +952,7 @@ on_configure_plugin (XfcePanelPlugin *plugin, BtPlugin *bp)
     g_signal_connect (pd->popup_width_spin,    "value-changed", G_CALLBACK (on_popup_width_changed), pd);
     g_signal_connect (pd->popup_height_spin,   "value-changed", G_CALLBACK (on_popup_height_changed),pd);
     g_signal_connect (pd->separators_check,    "toggled",       G_CALLBACK (on_separators_toggled),  pd);
+    g_signal_connect (pd->anim_check,          "toggled",       G_CALLBACK (on_animations_toggled),  pd);
     g_signal_connect (pd->style_combo,         "changed",       G_CALLBACK (on_popup_style_changed), pd);
     g_signal_connect (pd->unnamed_check,       "toggled",       G_CALLBACK (on_unnamed_toggled),     pd);
     g_signal_connect (pd->hide_check,          "toggled",       G_CALLBACK (on_hide_toggled),        pd);
@@ -1104,17 +1130,28 @@ on_button_toggled (GtkToggleButton *btn, BtPlugin *bp)
 #endif
         bp->popup->show_separators = bp->show_separators;
         bp->popup->show_unnamed    = bp->show_unnamed;
+        /* La opción le llega al menú como un dato en su ventana (lo lee
+         * popup_anim_enabled), sin tocar la estructura del popup. */
+        g_object_set_data (G_OBJECT (bp->popup->window), "bt-no-anim",
+                           GINT_TO_POINTER (!bp->animations));
         popup_show (bp->popup, bp->plugin, bp->button, bp->conn,
                     bp->popup_width, bp->popup_height);
     } else {
-        popup_hide (bp->popup);
+        popup_close (bp->popup);   /* lo cerró el usuario: con fundido */
     }
 }
 
-static void
-on_popup_hidden (GtkWidget *win, BtPlugin *bp)
+/* El menú quedó cerrado para el programa: soltar el botón. Lo llama el
+ * popup al EMPEZAR el cierre (con fundido, la ventana se oculta 100 ms
+ * después). Antes se escuchaba "hide" de la ventana, y ese aviso tardío
+ * soltaba el botón si el menú se había reabierto durante el fundido. El
+ * bloqueo de "toggled" evita la vuelta de siempre. */
+void
+bt_plugin_popup_closed (gpointer bp_ptr)
 {
-    (void) win;
+    BtPlugin *bp = bp_ptr;
+    if (bp == NULL || bp->button == NULL)
+        return;
     g_signal_handlers_block_by_func (bp->button, on_button_toggled, bp);
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (bp->button), FALSE);
     g_signal_handlers_unblock_by_func (bp->button, on_button_toggled, bp);
@@ -1272,8 +1309,8 @@ bt_plugin_new (XfcePanelPlugin *plugin)
 
     if (bp->conn && !bp->is_duplicate)
         bp->signal_ids = bt_subscribe_signals (bp->conn, on_bt_changed, bp);
-    g_signal_connect (bp->popup->window, "hide",
-                      G_CALLBACK (on_popup_hidden), bp);
+    /* El botón se suelta desde el cierre lógico del popup
+     * (bt_plugin_popup_closed), no con "hide" de la ventana. */
 
     on_bt_changed_cb (bp);
     apply_config (bp);

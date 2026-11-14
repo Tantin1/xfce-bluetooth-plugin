@@ -838,5 +838,15 @@ msgstr "패널에 붙임"
 msgid "Automatic: floating with rounded corners when the theme rounds its popovers; otherwise attached to the panel."
 msgstr "자동: 테마가 팝오버의 모서리를 둥글게 하면 둥근 모서리로 떠 있고, 그렇지 않으면 패널에 붙습니다."
 
+#: plugin.c:796
+msgid "Enable animations"
+msgstr "애니메이션 사용"
+
+#: plugin.c:800
+msgid ""
+"Smooth transitions when opening the window and when expanding a device or "
+"its details."
+msgstr "창을 열 때와 기기나 세부 정보를 펼칠 때 부드럽게 전환합니다."
+
 #~ msgid "Device disconnected"
 #~ msgstr "기기 연결 끊김"

@@ -259,7 +259,7 @@ wl_on_button_press (GtkWidget *widget, GdkEventButton *ev, BtPopup *popup)
     if (inside)
         return GDK_EVENT_PROPAGATE;
 
-    popup_hide (popup);
+    popup_close (popup);
     /* Consumirlo: si el clic fue en el botón del panel, que no la vuelva a
      * abrir enseguida. */
     return GDK_EVENT_STOP;
@@ -619,7 +619,7 @@ static void
 on_theme_changed (GObject *settings, GParamSpec *pspec, BtPopup *popup)
 {
     (void) settings; (void) pspec;
-    if (!gtk_widget_get_visible (popup->window))
+    if (!popup_is_active (popup))
         popup->theme_dirty = TRUE;
 }
 
@@ -773,8 +773,11 @@ op_show_error_inline (OpInProgress *op, const gchar *message)
         gtk_label_set_xalign    (GTK_LABEL (err_label), 0.0);
         gtk_label_set_line_wrap (GTK_LABEL (err_label), TRUE);
         gtk_label_set_max_width_chars (GTK_LABEL (err_label), 34);
-        gtk_box_pack_start (GTK_BOX (op->expand_box), err_label, FALSE, FALSE, 0);
-        gtk_box_reorder_child (GTK_BOX (op->expand_box), err_label, 0);
+        /* Dentro del contenido (el revelador), no en la caja envolvente:
+         * así acompaña el despliegue y el pliegue. */
+        GtkWidget *content = expand_content_box (op->expand_box);
+        gtk_box_pack_start (GTK_BOX (content), err_label, FALSE, FALSE, 0);
+        gtk_box_reorder_child (GTK_BOX (content), err_label, 0);
         g_object_set_data (G_OBJECT (op->expand_box), "error-label", err_label);
     }
     gtk_label_set_text (GTK_LABEL (err_label), message);
@@ -1499,6 +1502,9 @@ static gboolean
 on_key_press (GtkWidget *widget, GdkEventKey *event, BtPopup *popup)
 {
     (void) widget;
+    /* Desvaneciéndose: en Wayland el compositor todavía le da el teclado. */
+    if (popup->closing)
+        return GDK_EVENT_STOP;
 
     if (event->keyval == GDK_KEY_Escape) {
         /* Primero cierra el expand abierto; recién con el segundo Escape se
@@ -1509,7 +1515,7 @@ on_key_press (GtkWidget *widget, GdkEventKey *event, BtPopup *popup)
             clear_open_highlight (popup);
             return TRUE;
         }
-        popup_hide (popup);
+        popup_close (popup);
         return TRUE;
     }
     return FALSE;
@@ -1519,7 +1525,7 @@ static gboolean
 on_focus_out (GtkWidget *widget, GdkEventFocus *ev, BtPopup *popup)
 {
     (void) widget; (void) ev;
-    popup_hide (popup);
+    popup_close (popup);
     return FALSE;
 }
 
@@ -1544,7 +1550,7 @@ on_button_press (GtkWidget *widget, GdkEventButton *event, BtPopup *popup)
     /* Click fuera de la ventana: cerrar (y consumirlo: si fue en el botón
      * del panel, que no la vuelva a abrir). */
     if (x < 0 || y < 0 || x > w || y > h) {
-        popup_hide (popup);
+        popup_close (popup);
         return TRUE;
     }
     return FALSE;
@@ -1674,8 +1680,16 @@ popup_create (XfcePanelPlugin *plugin, GtkWidget *button)
                  * clase bt-round (ver popup_set_round). Varios temas les dan
                  * margen a los separadores dentro de menús y popovers (3 o 4
                  * px): quedaba una franja sin resaltar entre la fila abierta
-                 * y la línea siguiente. */
-                "menu.bt-popup-frame { margin: 0; box-shadow: none; border-radius: 0; }"
+                 * y la línea siguiente.
+                 * Sin relleno lateral: Orchis, Lavanda y otros temas muy
+                 * redondeados le dan al menú 6 px de cada lado, y las líneas
+                 * y el resaltado de la fila abierta no llegaban al borde. El
+                 * de arriba y abajo se deja (despeja las esquinas), y el
+                 * texto no se pega al borde porque las filas tienen su propio
+                 * margen. El ancho de la lista ya descuenta el relleno real
+                 * del tema (popup_frame_extra). */
+                "menu.bt-popup-frame { margin: 0; box-shadow: none; border-radius: 0;"
+                "  padding-left: 0; padding-right: 0; }"
                 "menu.bt-popup-frame separator { margin: 0; min-height: 1px;"
                 " background-color: alpha(currentColor, 0.15); background-image: none; }",
                 -1, NULL);
@@ -1764,10 +1778,83 @@ popup_create (XfcePanelPlugin *plugin, GtkWidget *button)
     return popup;
 }
 
+/* ---------- fundido de entrada ---------- */
+
+#define POPUP_FADE_MS 100
+
+/* La ventana aparece de golpe, en su lugar y con su tamaño final; lo único
+ * que se anima es la opacidad del marco. Solo con la ventana transparente
+ * (compositor): con la ventana opaca, debajo del contenido se vería el fondo
+ * de la ventana, de otro color, durante el fundido. */
+static gboolean
+popup_fade_tick (GtkWidget *frame, GdkFrameClock *clock, gpointer user_data)
+{
+    BtPopup *popup = user_data;
+    gint64   now   = gdk_frame_clock_get_frame_time (clock);
+
+    if (popup->fade_start == 0)
+        popup->fade_start = now;
+    gdouble t = (gdouble) (now - popup->fade_start) / (POPUP_FADE_MS * 1000.0);
+    if (t >= 1.0) {
+        gtk_widget_set_opacity (frame, 1.0);
+        popup->fade_tick_id = 0;    /* GTK la saca al devolver REMOVE */
+        popup->fade_start   = 0;
+        return G_SOURCE_REMOVE;
+    }
+    gdouble e = 1.0 - (1.0 - t) * (1.0 - t) * (1.0 - t);   /* frena al final */
+    gtk_widget_set_opacity (frame, e);
+    return G_SOURCE_CONTINUE;
+}
+
+/* Corta un fundido en curso y deja el marco opaco: cerrar en medio del
+ * fundido no deja el contenido transparente para la próxima vez. */
+static void
+popup_fade_stop (BtPopup *popup)
+{
+    if (popup->fade_tick_id) {
+        gtk_widget_remove_tick_callback (popup->frame, popup->fade_tick_id);
+        popup->fade_tick_id = 0;
+    }
+    popup->fade_start = 0;
+    gtk_widget_set_opacity (popup->frame, 1.0);
+}
+
+/* La casilla «Activar animaciones» de Propiedades. plugin.c la deja como
+ * dato en la ventana justo antes de mostrarla. Apagada, cada camino animado
+ * hace lo instantáneo de siempre. Si el sistema tiene las animaciones
+ * apagadas, GTK no anima los reveladores aunque esté marcada. */
+gboolean
+popup_anim_enabled (BtPopup *popup)
+{
+    return !(popup && popup->window &&
+             g_object_get_data (G_OBJECT (popup->window), "bt-no-anim"));
+}
+
+/* Justo antes de mostrar la ventana, en X11 y en Wayland. */
+static void
+popup_fade_begin (BtPopup *popup)
+{
+    gboolean anim = TRUE;
+
+    popup_fade_stop (popup);
+    g_object_get (gtk_widget_get_settings (popup->window),
+                  "gtk-enable-animations", &anim, NULL);
+    if (!anim || !popup->rounded || !popup_anim_enabled (popup))
+        return;
+
+    gtk_widget_set_opacity (popup->frame, 0.0);
+    popup->fade_tick_id = gtk_widget_add_tick_callback (popup->frame,
+                              popup_fade_tick, popup, NULL);
+}
+
 void
 popup_show (BtPopup *popup, XfcePanelPlugin *plugin, GtkWidget *button,
             GDBusConnection *conn, gint popup_width, gint popup_height)
 {
+    /* Reabrir mientras se desvanece: terminar el cierre de golpe. Va antes
+     * que nada, porque aplicar el estilo exige la ventana oculta. */
+    popup_hide (popup);
+
     popup->conn         = conn;
     popup->popup_width  = popup_width;
     popup->popup_height = popup_height;
@@ -1816,6 +1903,7 @@ popup_show (BtPopup *popup, XfcePanelPlugin *plugin, GtkWidget *button,
      * quedaba mal ubicada con el panel abajo o a un costado. */
     gtk_widget_show_all (popup->frame);
 
+    popup_fade_begin (popup);
     if (popup_is_wayland (popup->window)) {
         popup_show_wayland (popup, plugin, button);
     } else {
@@ -1839,15 +1927,47 @@ popup_show (BtPopup *popup, XfcePanelPlugin *plugin, GtkWidget *button,
     popup->discovery_active = TRUE;
 }
 
-void
-popup_hide (BtPopup *popup)
+#define POPUP_FADE_OUT_MS 100
+
+gboolean
+popup_is_active (BtPopup *popup)
+{
+    return popup && popup->window &&
+           gtk_widget_get_visible (popup->window) && !popup->closing;
+}
+
+/* ¿La ventana sigue de verdad en pantalla? En Wayland el compositor puede
+ * sacarla por su cuenta: GDK la da por oculta aunque GTK la crea visible. */
+static gboolean
+popup_surface_alive (BtPopup *popup)
+{
+    GdkWindow *w = gtk_widget_get_window (popup->window);
+    return w && gdk_window_is_visible (w);
+}
+
+/* Que los clics atraviesen (o no) la ventana. */
+static void
+popup_set_click_through (BtPopup *popup, gboolean through)
+{
+    if (through) {
+        cairo_region_t *empty = cairo_region_create ();
+        gtk_widget_input_shape_combine_region (popup->window, empty);
+        cairo_region_destroy (empty);
+    } else {
+        gtk_widget_input_shape_combine_region (popup->window, NULL);
+    }
+}
+
+/* Cierre lógico: todo lo que hace que el menú deje de estar abierto PARA EL
+ * PROGRAMA. Siempre instantáneo: nada espera al fundido. */
+static void
+popup_close_logical (BtPopup *popup)
 {
     GdkDisplay *display;
     GdkSeat    *seat;
 
-    if (!gtk_widget_get_visible (popup->window) || popup->hiding)
-        return;
-    popup->hiding = TRUE;
+    popup->closing = TRUE;                       /* lo primero */
+    popup_fade_stop (popup);                     /* corta el fundido de entrada */
     if (wl_open_popup == popup)
         wl_open_popup = NULL;
 
@@ -1886,12 +2006,6 @@ popup_hide (BtPopup *popup)
     }
     popup->scanning = FALSE;
 
-    if (popup->current_expand_box) {
-        gtk_widget_hide (popup->current_expand_box);
-        popup->current_expand_box = NULL;
-    }
-    clear_open_highlight (popup);
-
     /* Wayland: durante el acaparamiento el botón del panel no se entera de
      * que el puntero se fue, y queda resaltado (y con el recuadro de foco)
      * hasta volver a pasar por encima. */
@@ -1904,14 +2018,123 @@ popup_hide (BtPopup *popup)
             gtk_window_set_focus_visible (GTK_WINDOW (top), FALSE);
     }
 
+    /* Soltar el botón del panel YA, no cuando se oculte la ventana: si no,
+     * un clic en el botón durante el fundido reabre el menú y el aviso
+     * tardío de la ventana vieja soltaba el botón con el menú abierto. */
+    if (popup->plugin_ref)
+        bt_plugin_popup_closed (popup->plugin_ref);
+}
+
+/* Cierre visual: dejar el contenido como nuevo y ocultar la ventana. El
+ * contenido se limpia acá y no en el lógico: plegar el panel de la fila al
+ * empezar el fundido se vería como un salto mientras se desvanece. */
+static void
+popup_close_visual (BtPopup *popup)
+{
+    if (popup->close_tick_id) {
+        gtk_widget_remove_tick_callback (popup->frame, popup->close_tick_id);
+        popup->close_tick_id = 0;
+    }
+    if (popup->close_timeout_id) {
+        g_source_remove (popup->close_timeout_id);
+        popup->close_timeout_id = 0;
+    }
+    popup->close_start = 0;
+
+    if (popup->current_expand_box) {
+        gtk_widget_hide (popup->current_expand_box);
+        popup->current_expand_box = NULL;
+    }
+    clear_open_highlight (popup);
+
     gtk_widget_hide (popup->window);
-    popup->hiding = FALSE;
+
+    /* Recién con la ventana oculta: opaco y con clics normales para la
+     * próxima apertura (antes se vería el contenido opaco un instante). */
+    gtk_widget_set_opacity (popup->frame, 1.0);
+    popup_set_click_through (popup, FALSE);
+    popup->closing = FALSE;
+}
+
+void
+popup_hide (BtPopup *popup)
+{
+    if (!gtk_widget_get_visible (popup->window))
+        return;
+    if (!popup->closing)
+        popup_close_logical (popup);
+    popup_close_visual (popup);
+}
+
+static gboolean
+popup_fade_out_tick (GtkWidget *frame, GdkFrameClock *clock, gpointer user_data)
+{
+    BtPopup *popup = user_data;
+    gint64   now   = gdk_frame_clock_get_frame_time (clock);
+
+    if (popup->close_start == 0)
+        popup->close_start = now;
+    gdouble t = (gdouble) (now - popup->close_start) / (POPUP_FADE_OUT_MS * 1000.0);
+    if (t >= 1.0) {
+        popup->close_tick_id = 0;    /* GTK la saca al devolver REMOVE */
+        popup_close_visual (popup);
+        return G_SOURCE_REMOVE;
+    }
+    /* (1 - t)²: cae rápido al principio y frena al final. */
+    gtk_widget_set_opacity (frame, popup->close_from * (1.0 - t) * (1.0 - t));
+    return G_SOURCE_CONTINUE;
+}
+
+/* Tope: el compositor deja de pedir cuadros a una ventana que no se ve
+ * (tapada, pantalla apagada). Sin esto el menú quedaría para siempre
+ * «cerrándose», invisible y sin poder reabrirse bien. */
+static gboolean
+popup_fade_out_timeout (gpointer user_data)
+{
+    BtPopup *popup = user_data;
+    popup->close_timeout_id = 0;
+    if (popup->closing)
+        popup_close_visual (popup);
+    return G_SOURCE_REMOVE;
+}
+
+void
+popup_close (BtPopup *popup)
+{
+    if (!gtk_widget_get_visible (popup->window) || popup->closing)
+        return;
+
+    gboolean anim = TRUE;
+    g_object_get (gtk_widget_get_settings (popup->window),
+                  "gtk-enable-animations", &anim, NULL);
+    if (!anim || !popup_anim_enabled (popup) || !popup->rounded ||
+        !gtk_widget_get_mapped (popup->window) || !popup_surface_alive (popup)) {
+        popup_hide (popup);
+        return;
+    }
+
+    /* Leer la opacidad ANTES del cierre lógico, que la deja en 1: si se
+     * cierra en medio del fundido de entrada, la salida arranca desde ahí
+     * (si no, un destello a opaco). */
+    gdouble from = gtk_widget_get_opacity (popup->frame);
+
+    popup_close_logical (popup);
+
+    popup->close_from  = from;
+    popup->close_start = 0;
+    gtk_widget_set_opacity (popup->frame, from);
+    popup_set_click_through (popup, TRUE);
+    popup->close_tick_id = gtk_widget_add_tick_callback (popup->frame,
+                               popup_fade_out_tick, popup, NULL);
+    popup->close_timeout_id = g_timeout_add (POPUP_FADE_OUT_MS + 150,
+                                             popup_fade_out_timeout, popup);
 }
 
 void
 popup_destroy (BtPopup *popup)
 {
     if (!popup) return;
+    popup->plugin_ref = NULL;   /* el complemento se está liberando: no avisarle */
     popup_hide (popup);
     if (popup->composited_handler)
         g_signal_handler_disconnect (gtk_widget_get_screen (popup->window),
